@@ -17,10 +17,10 @@ import {
 import { toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 
-export default function GameTab({
-  onFinished,
+export default function GameFlowView({
+  onOpenSettings,
 }: {
-  onFinished: () => void;
+  onOpenSettings: () => void;
 }) {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [submissionsState, setSubmissionsState] = useState<{
@@ -53,22 +53,16 @@ export default function GameTab({
 
   if (game.jobs.length === 0) {
     return (
-      <p className="text-sm text-[var(--foreground)]/60">
-        먼저 &ldquo;문제 선택&rdquo; 탭에서 세트를 적용해주세요.
-      </p>
-    );
-  }
-
-  if (game.phase === "finished") {
-    return (
-      <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <p className="text-lg font-semibold">모든 라운드가 끝났어요!</p>
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-lg text-[var(--foreground)]">
+          아직 적용된 문제 세트가 없어요.
+        </p>
         <button
           type="button"
-          onClick={onFinished}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white"
+          onClick={onOpenSettings}
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white"
         >
-          종료 화면 보기
+          설정에서 문제 선택하기
         </button>
       </div>
     );
@@ -76,15 +70,15 @@ export default function GameTab({
 
   if (!isRoundInProgress(game)) {
     return (
-      <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <p className="text-sm text-[var(--foreground)]/70">
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-lg text-[var(--foreground)]">
           총 {game.jobs.length}문제가 준비됐어요.
         </p>
         <button
           type="button"
           disabled={busy}
           onClick={() => runAction(startFirstRound)}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-white disabled:opacity-60"
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
         >
           라운드 시작
         </button>
@@ -99,27 +93,27 @@ export default function GameTab({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-lg font-semibold text-[var(--foreground)]">
           문제 {game.currentIndex + 1} / {game.jobs.length}
         </p>
         {revealed && (
-          <p className="font-[family-name:var(--font-heading)] text-xl">
+          <p className="font-[family-name:var(--font-heading)] text-3xl">
             정답: {job.title}
           </p>
         )}
       </div>
 
-      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
+      <div className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]">
         {job.hints.slice(0, game.hintsOpen).map((hint, i) => (
-          <p key={i} className="text-sm">
-            <span className="font-[family-name:var(--font-accent)] mr-2 text-[var(--color-primary)]">
+          <p key={i} className="text-xl leading-snug text-[var(--foreground)]">
+            <span className="font-[family-name:var(--font-accent)] mr-3 text-[var(--color-primary)]">
               {game.scoring[i]}점
             </span>
             {hint}
           </p>
         ))}
         {game.initialsRevealed && (
-          <p className="mt-2 font-[family-name:var(--font-accent)] text-lg tracking-widest text-[var(--color-primary)]">
+          <p className="mt-2 font-[family-name:var(--font-accent)] text-3xl tracking-widest text-[var(--color-primary)]">
             초성 힌트: {toChosung(job.title)}
           </p>
         )}
@@ -131,7 +125,7 @@ export default function GameTab({
             type="button"
             disabled={busy || game.hintsOpen >= 5}
             onClick={() => runAction(() => revealNextHint(game.hintsOpen))}
-            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
           >
             다음 단서 공개
           </button>
@@ -139,7 +133,7 @@ export default function GameTab({
             type="button"
             disabled={busy || game.initialsRevealed}
             onClick={() => runAction(revealInitials)}
-            className="rounded-[var(--radius-card)] bg-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary)] disabled:opacity-50"
           >
             초성 힌트 공개
           </button>
@@ -147,7 +141,7 @@ export default function GameTab({
             type="button"
             disabled={busy}
             onClick={() => runAction(() => revealAnswer(game))}
-            className="rounded-[var(--radius-card)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] disabled:opacity-60"
+            className="rounded-[var(--radius-card)] bg-[var(--foreground)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
           >
             정답 공개
           </button>
@@ -159,14 +153,14 @@ export default function GameTab({
           type="button"
           disabled={busy}
           onClick={() => runAction(() => advanceRound(game))}
-          className="w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
         >
-          {isLast ? "결과 보기" : "다음 라운드"}
+          {isLast ? "게임 종료" : "다음 라운드"}
         </button>
       )}
 
       <div>
-        <h3 className="mb-2 text-sm font-semibold">
+        <h3 className="mb-2 text-sm font-semibold text-[var(--foreground)]">
           제출 현황 ({submissions.length}명)
         </h3>
         <ul className="flex flex-col gap-1.5">
@@ -176,14 +170,16 @@ export default function GameTab({
               className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--color-surface)] px-3 py-2 text-sm"
             >
               <span className="font-semibold">{s.studentName}</span>
-              <span className="text-[var(--foreground)]/60">
+              <span className="text-[var(--foreground)]/70">
                 시도 {s.attempts.length}/3
               </span>
               {revealed && (
                 <>
                   <span
                     className={
-                      s.correct ? "text-[var(--color-primary)]" : "text-red-600"
+                      s.correct
+                        ? "font-semibold text-[var(--color-primary)]"
+                        : "font-semibold text-red-600"
                     }
                   >
                     {s.correct ? `정답 (${s.score}점)` : "오답"}
@@ -222,7 +218,7 @@ export default function GameTab({
             </li>
           ))}
           {submissions.length === 0 && (
-            <li className="text-sm text-[var(--foreground)]/50">
+            <li className="text-sm text-[var(--foreground)]/60">
               아직 제출한 학생이 없어요.
             </li>
           )}
