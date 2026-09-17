@@ -1,29 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 
 const ROLE_KEY = "jikeop-quiz:role";
 
 export default function RoleSelectPage() {
   const router = useRouter();
-  const [checkedStorage, setCheckedStorage] = useState(false);
+  const savedRole = useLocalStorageValue(ROLE_KEY);
+  const isRedirecting = savedRole === "teacher" || savedRole === "student";
 
   useEffect(() => {
-    const savedRole = window.localStorage.getItem(ROLE_KEY);
-    if (savedRole === "teacher" || savedRole === "student") {
+    if (isRedirecting) {
       router.replace(`/${savedRole}`);
-      return;
     }
-    setCheckedStorage(true);
-  }, [router]);
+  }, [isRedirecting, savedRole, router]);
 
   const selectRole = (role: "teacher" | "student") => {
     window.localStorage.setItem(ROLE_KEY, role);
     router.push(`/${role}`);
   };
 
-  if (!checkedStorage) {
+  if (isRedirecting) {
     return null;
   }
 
