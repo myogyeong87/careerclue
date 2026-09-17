@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 잡셜록
 
-## Getting Started
+직업의 단서를 하나씩 공개하며 학생이 추리하는 중학교 진로 수업용 실시간 퀴즈.
+전체 스펙은 [`jikeop-quiz-spec.md`](./jikeop-quiz-spec.md) 참고.
 
-First, run the development server:
+## 스택
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Next.js (App Router, TypeScript, Tailwind CSS v4)
+- Firebase Firestore (데이터 저장)
+- Vercel (호스팅·배포)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 시작하기
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. 의존성 설치: `npm install`
+2. `.env.local.example`을 `.env.local`로 복사하고 Firebase 프로젝트 설정 값을 채우기
+3. 개발 서버 실행: `npm run dev`
+4. [http://localhost:3000](http://localhost:3000) 접속
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 폴더 구조
 
-## Learn More
+- `src/app/` — 역할 선택(`/`), 교사 화면(`/teacher`), 학생 화면(`/student`)
+- `src/lib/firebase.ts` — Firebase 클라이언트 초기화(Firestore)
+- `jikeop-quiz-spec.md` — 데이터 모델·화면 구성·게임 흐름 등 전체 스펙
 
-To learn more about Next.js, take a look at the following resources:
+## 폰트 참고
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+본문 폰트로 스펙에 명시된 스포카 한 산스 네오는 구글 폰트에 없는 자체 배포 폰트라, 웹폰트 파일을 프로젝트에 직접 포함해야 정확히 적용됩니다. 파일을 확보하기 전까지는 노토 산스 KR로 임시 대체되어 있습니다(`src/app/layout.tsx`).
