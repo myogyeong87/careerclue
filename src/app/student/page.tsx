@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { checkOrRegisterStudent } from "@/lib/roster";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
+import GameView from "./_components/GameView";
 
 const STUDENT_ID_KEY = "jikeop-quiz:studentId";
 
@@ -44,16 +45,7 @@ export default function StudentPage() {
   };
 
   if (joined) {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-        <h1 className="text-2xl">
-          {joined.name}({joined.studentId})님, 안녕하세요!
-        </h1>
-        <p className="text-sm text-[var(--foreground)]/70">
-          게임이 곧 시작돼요. 잠시만 기다려주세요.
-        </p>
-      </main>
-    );
+    return <GameView studentId={joined.studentId} studentName={joined.name} />;
   }
 
   return (

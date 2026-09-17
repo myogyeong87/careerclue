@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// 스펙 2장: 로그인/인증 없는 앱이라 규칙도 열어둠 (학급 내부용, 민감 정보 없음 전제).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /question_sets/{setId} {
+      allow read, write: if true;
+    }
+    match /games/{gameId} {
+      allow read, write: if true;
+
+      match /submissions/{submissionId} {
+        allow read, write: if true;
+      }
+    }
+    match /roster/{studentId} {
+      allow read, write: if true;
+    }
+  }
+}

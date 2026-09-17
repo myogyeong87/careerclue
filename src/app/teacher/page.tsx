@@ -39,7 +39,9 @@ export default function TeacherPage() {
       </div>
       <div className="flex-1">
         {activeTab === "sets" && <QuestionSetsTab />}
-        {activeTab === "game" && <GameTab />}
+        {activeTab === "game" && (
+          <GameTab onFinished={() => setActiveTab("results")} />
+        )}
         {activeTab === "edit" && <EditSetTab />}
         {activeTab === "results" && <ResultsTab />}
       </div>

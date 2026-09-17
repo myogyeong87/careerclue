@@ -12,7 +12,7 @@ export interface QuestionSet {
   scoring: number[]; // 기본 [100, 80, 60, 40, 20]
 }
 
-export type GamePhase = "idle" | "active" | "revealed";
+export type GamePhase = "idle" | "active" | "revealed" | "finished";
 
 export interface GameState {
   activeSetId: string | null;
