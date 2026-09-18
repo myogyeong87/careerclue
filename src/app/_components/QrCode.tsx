@@ -11,7 +11,7 @@ export default function QrCode({
   size?: "md" | "sm";
 }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
-  const box = size === "sm" ? "h-40 w-40" : "h-72 w-72";
+  const box = size === "sm" ? "w-40 aspect-square" : "w-72 aspect-square";
 
   useEffect(() => {
     let cancelled = false;
@@ -27,7 +27,11 @@ export default function QrCode({
     <div className="flex flex-col items-center gap-2">
       {dataUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={dataUrl} alt="학생 접속 QR 코드" className={box} />
+        <img
+          src={dataUrl}
+          alt="학생 접속 QR 코드"
+          className={`object-contain ${box}`}
+        />
       ) : (
         <div
           className={`flex items-center justify-center text-sm text-[var(--foreground)]/50 ${box}`}
