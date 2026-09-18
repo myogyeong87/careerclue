@@ -21,6 +21,7 @@ export interface GameState {
   currentIndex: number; // -1 = 시작 전
   hintsOpen: number; // 1~5
   initialsRevealed: boolean;
+  charCountRevealed: boolean;
   phase: GamePhase;
   roundId: string | null;
 }
@@ -54,6 +55,7 @@ export const EMPTY_GAME_STATE: GameState = {
   currentIndex: -1,
   hintsOpen: 1,
   initialsRevealed: false,
+  charCountRevealed: false,
   phase: "idle",
   roundId: null,
 };

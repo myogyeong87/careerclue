@@ -25,6 +25,7 @@ export function subscribeGameState(
         currentIndex: data.currentIndex ?? -1,
         hintsOpen: data.hintsOpen ?? 1,
         initialsRevealed: data.initialsRevealed ?? false,
+        charCountRevealed: data.charCountRevealed ?? false,
         phase: data.phase ?? "idle",
         roundId: data.roundId ?? null,
       });
@@ -52,6 +53,7 @@ export async function applySetToGame(set: QuestionSet): Promise<void> {
     currentIndex: -1,
     hintsOpen: 1,
     initialsRevealed: false,
+    charCountRevealed: false,
     phase: "idle",
     roundId: null,
   });
@@ -63,6 +65,7 @@ export async function startFirstRound(): Promise<void> {
     currentIndex: 0,
     hintsOpen: 1,
     initialsRevealed: false,
+    charCountRevealed: false,
     phase: "active",
     roundId: newRoundId(),
   });
@@ -75,6 +78,10 @@ export async function revealNextHint(hintsOpen: number): Promise<void> {
 
 export async function revealInitials(): Promise<void> {
   await updateDoc(GAME_DOC, { initialsRevealed: true });
+}
+
+export async function revealCharCount(): Promise<void> {
+  await updateDoc(GAME_DOC, { charCountRevealed: true });
 }
 
 /** 정답 공개: phase 전환 + 현재 라운드 제출 일괄 채점 */
@@ -97,7 +104,27 @@ export async function advanceRound(game: GameState): Promise<void> {
     currentIndex: nextIndex,
     hintsOpen: 1,
     initialsRevealed: false,
+    charCountRevealed: false,
     phase: "active",
     roundId: newRoundId(),
   });
+}
+
+/** 진행 중인 라운드를 중지하고 대기실(라운드 시작 전)로 되돌림. 현재 세트는 유지 */
+export async function resetToLobby(): Promise<void> {
+  await clearAllSubmissions();
+  await clearLobby();
+  await updateDoc(GAME_DOC, {
+    currentIndex: -1,
+    hintsOpen: 1,
+    initialsRevealed: false,
+    charCountRevealed: false,
+    phase: "idle",
+    roundId: null,
+  });
+}
+
+/** 남은 문제와 상관없이 지금 바로 게임을 종료하고 결과 화면으로 전환 */
+export async function endGameNow(): Promise<void> {
+  await updateDoc(GAME_DOC, { phase: "finished" });
 }

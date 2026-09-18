@@ -126,14 +126,11 @@ export default function GameView({
           scoring={game.scoring}
           initialsRevealed={game.initialsRevealed}
           chosung={toChosung(job.title)}
+          charCountRevealed={game.charCountRevealed}
+          charCount={charCountPreview(job.title)}
           revealed={revealed}
           answer={job.title}
         />
-        {!revealed && (
-          <p className="mt-1 font-mono text-lg tracking-widest text-[var(--foreground)]/70">
-            {charCountPreview(job.title)}
-          </p>
-        )}
       </div>
 
       {!revealed ? (

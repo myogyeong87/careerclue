@@ -16,6 +16,8 @@ export default function ClueBoard({
   scoring,
   initialsRevealed,
   chosung,
+  charCountRevealed,
+  charCount,
   revealed,
   answer,
   size = "compact",
@@ -25,6 +27,8 @@ export default function ClueBoard({
   scoring: number[];
   initialsRevealed: boolean;
   chosung?: string;
+  charCountRevealed?: boolean;
+  charCount?: string;
   revealed: boolean;
   answer?: string;
   size?: "large" | "compact";
@@ -83,6 +87,16 @@ export default function ClueBoard({
           </div>
         );
       })}
+
+      {charCountRevealed && charCount && (
+        <div
+          className={`flex items-center rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)] bg-white/70 font-[family-name:var(--font-accent)] tracking-widest text-[var(--color-primary)] ${
+            large ? "flex-1 px-10 py-6 text-4xl" : "px-4 py-3 text-lg"
+          }`}
+        >
+          글자수 힌트: {charCount}
+        </div>
+      )}
 
       {initialsRevealed && chosung && (
         <div

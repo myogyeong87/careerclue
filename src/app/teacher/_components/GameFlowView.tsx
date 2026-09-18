@@ -5,6 +5,7 @@ import {
   advanceRound,
   isRoundInProgress,
   revealAnswer,
+  revealCharCount,
   revealInitials,
   revealNextHint,
   startFirstRound,
@@ -15,7 +16,7 @@ import {
   overrideSubmissionVerdict,
   subscribeRoundSubmissions,
 } from "@/lib/submissions";
-import { toChosung } from "@/lib/text";
+import { charCountPreview, toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
 
@@ -173,6 +174,8 @@ export default function GameFlowView({
         scoring={game.scoring}
         initialsRevealed={game.initialsRevealed}
         chosung={toChosung(job.title)}
+        charCountRevealed={game.charCountRevealed}
+        charCount={charCountPreview(job.title)}
         revealed={revealed}
         answer={job.title}
         size="large"
@@ -187,6 +190,14 @@ export default function GameFlowView({
             className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
           >
             다음 단서 공개
+          </button>
+          <button
+            type="button"
+            disabled={busy || game.charCountRevealed}
+            onClick={() => runAction(revealCharCount)}
+            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary)] disabled:opacity-50"
+          >
+            글자수 힌트 공개
           </button>
           <button
             type="button"
@@ -219,14 +230,14 @@ export default function GameFlowView({
       )}
 
       <div>
-        <h3 className="mb-2 text-sm font-semibold text-[var(--foreground)]">
+        <h3 className="mb-2 text-base font-semibold text-[var(--foreground)]">
           제출 현황 ({submissions.length}명)
         </h3>
         <ul className="flex flex-col gap-1.5">
           {submissions.map((s) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--color-surface)] px-3 py-2 text-sm"
+              className="flex flex-wrap items-center gap-3 rounded-lg bg-[var(--color-surface)] px-4 py-2.5 text-base"
             >
               <span className="font-semibold">{s.studentName}</span>
               <span className="text-[var(--foreground)]/70">
@@ -244,8 +255,8 @@ export default function GameFlowView({
                     {s.correct ? `정답 (${s.score}점)` : "오답"}
                   </span>
                   {s.reviewNeeded && (
-                    <span className="ml-auto flex items-center gap-1.5">
-                      <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    <span className="ml-auto flex items-center gap-2">
+                      <span className="rounded-full bg-amber-200 px-2.5 py-1 text-sm font-semibold text-amber-800">
                         검토 필요
                       </span>
                       <button
@@ -255,7 +266,7 @@ export default function GameFlowView({
                             overrideSubmissionVerdict(s, job, true, game.scoring),
                           )
                         }
-                        className="rounded bg-[var(--color-primary)] px-2 py-0.5 text-xs font-semibold text-white"
+                        className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-white"
                       >
                         정답 처리
                       </button>
@@ -266,7 +277,7 @@ export default function GameFlowView({
                             overrideSubmissionVerdict(s, job, false, game.scoring),
                           )
                         }
-                        className="rounded bg-white px-2 py-0.5 text-xs font-semibold"
+                        className="rounded bg-white px-2.5 py-1 text-sm font-semibold"
                       >
                         오답 유지
                       </button>
@@ -277,7 +288,7 @@ export default function GameFlowView({
             </li>
           ))}
           {submissions.length === 0 && (
-            <li className="text-sm text-[var(--foreground)]/60">
+            <li className="text-base text-[var(--foreground)]/60">
               아직 제출한 학생이 없어요.
             </li>
           )}
