@@ -24,6 +24,8 @@ export interface GameState {
   charCountRevealed: boolean;
   phase: GamePhase;
   roundId: string | null;
+  /** phase가 finished로 바뀌기 직전 단계. 게임 화면으로 되돌아갈 때 복원용 */
+  resumePhase: "active" | "revealed" | null;
 }
 
 export interface SubmissionAttempt {
@@ -58,4 +60,5 @@ export const EMPTY_GAME_STATE: GameState = {
   charCountRevealed: false,
   phase: "idle",
   roundId: null,
+  resumePhase: null,
 };

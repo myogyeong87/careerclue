@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { endGameNow, resetToLobby, subscribeGameState } from "@/lib/game";
+import { endGameNow, resetToLobby, resumeGame, subscribeGameState } from "@/lib/game";
 import { EMPTY_GAME_STATE, type GameState } from "@/lib/types";
 import QrModal from "@/app/_components/QrModal";
 import GameFlowView from "./_components/GameFlowView";
@@ -17,18 +17,43 @@ export default function TeacherPage() {
   useEffect(() => subscribeGameState(setGame), []);
 
   const isGameFlow = !showSettings && game.phase !== "finished";
+  const hasStarted = game.currentIndex > -1;
+  const finished = game.phase === "finished";
 
-  const heading = showSettings
-    ? "설정"
-    : game.phase === "finished"
-      ? "게임 종료"
-      : "커리어탐정";
+  const heading = showSettings ? "설정" : finished ? "게임 종료" : "커리어탐정";
+
+  const handleEnd = async () => {
+    if (busy) return;
+    if (
+      !window.confirm(
+        "게임을 종료하고 채점 결과 화면으로 이동할까요? 진행 상태는 그대로 남아서 다시 게임 화면으로 돌아올 수 있어요.",
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await endGameNow(game);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleResume = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await resumeGame(game);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleReset = async () => {
     if (busy) return;
     if (
       !window.confirm(
-        "진행 중인 라운드를 중지하고 대기실로 돌아갈까요? 지금까지의 제출 기록은 초기화돼요.",
+        "대기실로 완전히 초기화할까요? 지금까지의 제출 기록과 대기 학생 목록이 모두 사라져요.",
       )
     ) {
       return;
@@ -40,36 +65,6 @@ export default function TeacherPage() {
       setBusy(false);
     }
   };
-
-  const handleEnd = async () => {
-    if (busy) return;
-    if (!window.confirm("게임을 지금 종료하고 결과 화면으로 이동할까요?")) return;
-    setBusy(true);
-    try {
-      await endGameNow();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleBackToLobby = async () => {
-    if (busy) return;
-    if (
-      !window.confirm(
-        "대기실로 돌아갈까요? 지금까지의 제출 기록은 초기화되고, 같은 세트로 다시 시작할 수 있어요.",
-      )
-    ) {
-      return;
-    }
-    setBusy(true);
-    try {
-      await resetToLobby();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const hasStarted = game.currentIndex > -1;
 
   return (
     <main
@@ -80,36 +75,6 @@ export default function TeacherPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl">{heading}</h1>
         <div className="flex items-center gap-4">
-          {!showSettings && hasStarted && game.phase !== "finished" && (
-            <>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleReset}
-                className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--foreground)]/70 transition hover:text-[var(--foreground)] disabled:opacity-50"
-              >
-                ⏹ 중지(초기화)
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleEnd}
-                className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:opacity-80 disabled:opacity-50"
-              >
-                ■ 게임 종료
-              </button>
-            </>
-          )}
-          {!showSettings && game.phase === "finished" && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={handleBackToLobby}
-              className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-            >
-              🔄 대기실로 돌아가기
-            </button>
-          )}
           {!showSettings && (
             <button
               type="button"
@@ -117,6 +82,36 @@ export default function TeacherPage() {
               className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--foreground)]/70 transition hover:text-[var(--foreground)]"
             >
               📱 학생 접속 QR
+            </button>
+          )}
+          {!showSettings && hasStarted && !finished && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleEnd}
+              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:opacity-80 disabled:opacity-50"
+            >
+              ■ 게임 종료
+            </button>
+          )}
+          {!showSettings && finished && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleResume}
+              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-primary)] transition hover:opacity-80 disabled:opacity-50"
+            >
+              🔙 게임 화면으로
+            </button>
+          )}
+          {!showSettings && hasStarted && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleReset}
+              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--foreground)]/70 transition hover:text-[var(--foreground)] disabled:opacity-50"
+            >
+              🔄 초기화
             </button>
           )}
           {!showSettings && (
@@ -133,7 +128,7 @@ export default function TeacherPage() {
 
       {showSettings ? (
         <SettingsPanel onClose={() => setShowSettings(false)} />
-      ) : game.phase === "finished" ? (
+      ) : finished ? (
         <ResultsTab />
       ) : (
         <GameFlowView onOpenSettings={() => setShowSettings(true)} />

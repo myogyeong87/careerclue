@@ -28,6 +28,7 @@ export function subscribeGameState(
         charCountRevealed: data.charCountRevealed ?? false,
         phase: data.phase ?? "idle",
         roundId: data.roundId ?? null,
+        resumePhase: data.resumePhase ?? null,
       });
     },
     (err) => onError?.(err),
@@ -56,6 +57,7 @@ export async function applySetToGame(set: QuestionSet): Promise<void> {
     charCountRevealed: false,
     phase: "idle",
     roundId: null,
+    resumePhase: null,
   });
 }
 
@@ -97,7 +99,7 @@ export async function revealAnswer(game: GameState): Promise<void> {
 export async function advanceRound(game: GameState): Promise<void> {
   const nextIndex = game.currentIndex + 1;
   if (nextIndex >= game.jobs.length) {
-    await updateDoc(GAME_DOC, { phase: "finished" });
+    await updateDoc(GAME_DOC, { phase: "finished", resumePhase: "revealed" });
     return;
   }
   await updateDoc(GAME_DOC, {
@@ -110,7 +112,7 @@ export async function advanceRound(game: GameState): Promise<void> {
   });
 }
 
-/** 진행 중인 라운드를 중지하고 대기실(라운드 시작 전)로 되돌림. 현재 세트는 유지 */
+/** 진행 중인 라운드를 완전히 중지하고 대기실(라운드 시작 전)로 되돌림. 현재 세트는 유지, 제출/대기 인원은 초기화 */
 export async function resetToLobby(): Promise<void> {
   await clearAllSubmissions();
   await clearLobby();
@@ -121,10 +123,20 @@ export async function resetToLobby(): Promise<void> {
     charCountRevealed: false,
     phase: "idle",
     roundId: null,
+    resumePhase: null,
   });
 }
 
-/** 남은 문제와 상관없이 지금 바로 게임을 종료하고 결과 화면으로 전환 */
-export async function endGameNow(): Promise<void> {
-  await updateDoc(GAME_DOC, { phase: "finished" });
+/** 남은 문제와 상관없이 지금 바로 채점 화면(결과)으로 전환. 진행 상태는 그대로 보존해 나중에 되돌아갈 수 있음 */
+export async function endGameNow(game: GameState): Promise<void> {
+  const resumePhase = game.phase === "revealed" ? "revealed" : "active";
+  await updateDoc(GAME_DOC, { phase: "finished", resumePhase });
+}
+
+/** 결과 화면에서 진행하던 게임 화면으로 복귀 (초기화 없이) */
+export async function resumeGame(game: GameState): Promise<void> {
+  await updateDoc(GAME_DOC, {
+    phase: game.resumePhase ?? "active",
+    resumePhase: null,
+  });
 }
