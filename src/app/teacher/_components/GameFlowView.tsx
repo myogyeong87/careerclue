@@ -170,7 +170,7 @@ export default function GameFlowView({
                   </li>
                 ))}
                 {lobby.length === 0 && (
-                  <li className="text-base text-[var(--foreground)]/50">
+                  <li className="col-span-full text-base text-[var(--foreground)]/50">
                     아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
                   </li>
                 )}
