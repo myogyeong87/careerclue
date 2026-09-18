@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { judgeAnswer } from "@/lib/answerJudge";
 import {
   advanceRound,
   isRoundInProgress,
@@ -254,53 +255,75 @@ export default function GameFlowView({
           {submissions.map((s) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center gap-3 rounded-lg bg-[var(--color-surface)] px-4 py-2.5 text-base"
+              className="flex flex-col gap-1.5 rounded-lg bg-[var(--color-surface)] px-4 py-2.5 text-base"
             >
-              <span className="font-semibold">{s.studentName}</span>
-              <span className="text-[var(--foreground)]/70">
-                시도 {s.attempts.length}/3
-              </span>
-              {revealed && (
-                <>
-                  <span
-                    className={
-                      s.correct
-                        ? "font-semibold text-[var(--color-primary)]"
-                        : "font-semibold text-red-600"
-                    }
-                  >
-                    {s.correct ? `정답 (${s.score}점)` : "오답"}
-                  </span>
-                  {s.reviewNeeded && (
-                    <span className="ml-auto flex items-center gap-2">
-                      <span className="rounded-full bg-amber-200 px-2.5 py-1 text-sm font-semibold text-amber-800">
-                        검토 필요
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          runAction(() =>
-                            overrideSubmissionVerdict(s, job, true, game.scoring),
-                          )
-                        }
-                        className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-white"
-                      >
-                        정답 처리
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          runAction(() =>
-                            overrideSubmissionVerdict(s, job, false, game.scoring),
-                          )
-                        }
-                        className="rounded bg-white px-2.5 py-1 text-sm font-semibold"
-                      >
-                        오답 유지
-                      </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-semibold">{s.studentName}</span>
+                <span className="text-[var(--foreground)]/70">
+                  시도 {s.attempts.length}/3
+                </span>
+                {revealed && (
+                  <>
+                    <span
+                      className={
+                        s.correct
+                          ? "font-semibold text-[var(--color-primary)]"
+                          : "font-semibold text-red-600"
+                      }
+                    >
+                      {s.correct ? `정답 (${s.score}점)` : "오답"}
                     </span>
-                  )}
-                </>
+                    {s.reviewNeeded && (
+                      <span className="ml-auto flex items-center gap-2">
+                        <span className="rounded-full bg-amber-200 px-2.5 py-1 text-sm font-semibold text-amber-800">
+                          검토 필요
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            runAction(() =>
+                              overrideSubmissionVerdict(s, job, true, game.scoring),
+                            )
+                          }
+                          className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-white"
+                        >
+                          정답 처리
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            runAction(() =>
+                              overrideSubmissionVerdict(s, job, false, game.scoring),
+                            )
+                          }
+                          className="rounded bg-white px-2.5 py-1 text-sm font-semibold"
+                        >
+                          오답 유지
+                        </button>
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              {revealed && s.attempts.length > 0 && (
+                <p className="text-sm">
+                  <span className="mr-1.5 text-[var(--foreground)]/50">제출:</span>
+                  {s.attempts.map((a, i) => {
+                    const verdict = judgeAnswer(a.answer, job);
+                    const color =
+                      verdict === "correct"
+                        ? "text-[var(--color-primary)] font-semibold"
+                        : verdict === "reviewNeeded"
+                          ? "text-amber-700 font-semibold"
+                          : "text-[var(--foreground)]/60";
+                    return (
+                      <span key={i}>
+                        {i > 0 && <span className="text-[var(--foreground)]/30">, </span>}
+                        <span className={color}>{a.answer}</span>
+                      </span>
+                    );
+                  })}
+                </p>
               )}
             </li>
           ))}
