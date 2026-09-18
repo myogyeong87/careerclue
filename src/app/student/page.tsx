@@ -90,9 +90,11 @@ export default function StudentPage() {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4">
-      <div className="text-center">
-        <h1 className="text-2xl">학생 참여</h1>
-        <p className="mt-1 text-sm text-[var(--foreground)]/70">
+      <div className="flex flex-col items-center gap-2 text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
+        <h1 className="text-2xl">커리어탐정</h1>
+        <p className="text-sm text-[var(--foreground)]/70">
           학번과 이름을 입력해주세요.
         </p>
       </div>

@@ -90,21 +90,47 @@ export default function ClueBoard({
 
       {charCountRevealed && charCount && (
         <div
-          className={`flex items-center rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)] bg-white/70 font-[family-name:var(--font-accent)] tracking-widest text-[var(--color-primary)] ${
-            large ? "flex-1 px-10 py-6 text-4xl" : "px-4 py-3 text-lg"
+          className={`flex items-center gap-4 rounded-[var(--radius-card)] border-4 border-[var(--color-accent)] bg-[var(--color-accent)]/25 shadow-[var(--shadow-card)] ${
+            large ? "flex-1 px-10 py-6" : "px-4 py-3"
           }`}
         >
-          글자수 힌트: {charCount}
+          <span
+            className={`shrink-0 rounded-full bg-[var(--color-accent)] font-[family-name:var(--font-accent)] text-[var(--foreground)] ${
+              large ? "px-5 py-2 text-xl" : "px-3 py-1 text-sm"
+            }`}
+          >
+            글자수 힌트
+          </span>
+          <span
+            className={`font-[family-name:var(--font-accent)] tracking-[0.4em] text-[var(--foreground)] ${
+              large ? "text-6xl" : "text-2xl"
+            }`}
+          >
+            {charCount}
+          </span>
         </div>
       )}
 
       {initialsRevealed && chosung && (
         <div
-          className={`flex items-center rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)] bg-white/70 font-[family-name:var(--font-accent)] tracking-widest text-[var(--color-primary)] ${
-            large ? "flex-1 px-10 py-6 text-4xl" : "px-4 py-3 text-lg"
+          className={`flex items-center gap-4 rounded-[var(--radius-card)] border-4 border-[var(--color-primary)] bg-[var(--color-primary)]/15 shadow-[var(--shadow-card)] ${
+            large ? "flex-1 px-10 py-6" : "px-4 py-3"
           }`}
         >
-          초성 힌트: {chosung}
+          <span
+            className={`shrink-0 rounded-full bg-[var(--color-primary)] font-[family-name:var(--font-accent)] text-white ${
+              large ? "px-5 py-2 text-xl" : "px-3 py-1 text-sm"
+            }`}
+          >
+            초성 힌트
+          </span>
+          <span
+            className={`font-[family-name:var(--font-accent)] tracking-[0.4em] text-[var(--color-primary)] ${
+              large ? "text-6xl" : "text-2xl"
+            }`}
+          >
+            {chosung}
+          </span>
         </div>
       )}
     </div>

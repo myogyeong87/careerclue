@@ -108,34 +108,36 @@ export default function GameFlowView({
   if (!isRoundInProgress(game)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
-        <CaseFileCard className="flex flex-col items-center gap-6 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
+        <div className="flex w-full max-w-lg flex-col gap-6">
+          <CaseFileCard className="flex flex-col items-center gap-5 text-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
 
-          <div>
-            <h2 className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-primary)]">
-              사건 파일 준비 완료!
-            </h2>
-            <p className="mt-1 text-lg text-[var(--foreground)]">
-              총 {game.jobs.length}문제가 준비됐어요.
-            </p>
-          </div>
+            <div className="flex flex-col gap-2">
+              <h2 className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-primary)]">
+                사건 파일 준비 완료!
+              </h2>
+              <p className="text-lg leading-relaxed text-[var(--foreground)]">
+                총 {game.jobs.length}문제가 준비됐어요.
+              </p>
+            </div>
+          </CaseFileCard>
 
-          <div className="flex w-full flex-col gap-2 text-left">
-            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-[var(--foreground)]/70">
+          <CaseFileCard className="flex flex-col gap-3 text-left">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/detective-story.png" alt="" className="h-5 w-5" />
+              <img src="/detective-story.png" alt="" className="h-6 w-6" />
               학생 대기 현황 ({lobby.length}명)
             </h3>
-            <ul className="flex flex-col gap-1.5">
+            <ul className="flex flex-col gap-2">
               {lobby.map((s) => (
                 <li
                   key={s.studentId}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-background)] px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
                 >
                   <span>
                     <span className="font-semibold">{s.name}</span>
-                    <span className="ml-1 text-[var(--foreground)]/60">
+                    <span className="ml-1.5 text-[var(--foreground)]/60">
                       ({s.studentId})
                     </span>
                   </span>
@@ -144,19 +146,19 @@ export default function GameFlowView({
                     onClick={() => kickStudent(s.studentId)}
                     title="퇴장시키기"
                     aria-label={`${s.name} 퇴장시키기`}
-                    className="rounded-full px-2 py-0.5 text-sm font-bold text-red-600 hover:bg-red-100"
+                    className="rounded-full px-2.5 py-1 text-base font-bold text-red-600 hover:bg-red-100"
                   >
                     ✕
                   </button>
                 </li>
               ))}
               {lobby.length === 0 && (
-                <li className="text-sm text-[var(--foreground)]/50">
+                <li className="text-base text-[var(--foreground)]/50">
                   아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
                 </li>
               )}
             </ul>
-          </div>
+          </CaseFileCard>
 
           {startCountdown !== null ? (
             <p className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary)]">
@@ -171,7 +173,7 @@ export default function GameFlowView({
               게임 시작
             </button>
           )}
-        </CaseFileCard>
+        </div>
       </div>
     );
   }
