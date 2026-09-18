@@ -149,52 +149,54 @@ export default function GameFlowView({
           )}
         </div>
 
-        <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2">
-          {origin && (
-            <CaseFileCard className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <h3 className="text-lg font-semibold text-[var(--foreground)]/80">
-                📱 이 QR로 접속하세요
-              </h3>
-              <QrCode url={`${origin}/student`} />
-            </CaseFileCard>
-          )}
+        <div className="flex flex-1 items-center justify-center">
+          <div className="grid w-full max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+            {origin && (
+              <CaseFileCard className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+                <h3 className="text-lg font-semibold text-[var(--foreground)]/80">
+                  📱 이 QR로 접속하세요
+                </h3>
+                <QrCode url={`${origin}/student`} />
+              </CaseFileCard>
+            )}
 
-          <CaseFileCard className="flex flex-1 flex-col gap-3 text-left">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/detective-story.png" alt="" className="h-6 w-6" />
-              학생 대기 현황 ({lobby.length}명)
-            </h3>
-            <ul className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
-              {lobby.map((s) => (
-                <li
-                  key={s.studentId}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
-                >
-                  <span>
-                    <span className="font-semibold">{s.name}</span>
-                    <span className="ml-1.5 text-[var(--foreground)]/60">
-                      ({s.studentId})
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => kickStudent(s.studentId)}
-                    title="퇴장시키기"
-                    aria-label={`${s.name} 퇴장시키기`}
-                    className="rounded-full px-2.5 py-1 text-base font-bold text-red-600 hover:bg-red-100"
+            <CaseFileCard className="flex flex-1 flex-col gap-3 text-left">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/detective-story.png" alt="" className="h-6 w-6" />
+                학생 대기 현황 ({lobby.length}명)
+              </h3>
+              <ul className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
+                {lobby.map((s) => (
+                  <li
+                    key={s.studentId}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
                   >
-                    ✕
-                  </button>
-                </li>
-              ))}
-              {lobby.length === 0 && (
-                <li className="text-base text-[var(--foreground)]/50">
-                  아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
-                </li>
-              )}
-            </ul>
-          </CaseFileCard>
+                    <span>
+                      <span className="font-semibold">{s.name}</span>
+                      <span className="ml-1.5 text-[var(--foreground)]/60">
+                        ({s.studentId})
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => kickStudent(s.studentId)}
+                      title="퇴장시키기"
+                      aria-label={`${s.name} 퇴장시키기`}
+                      className="rounded-full px-2.5 py-1 text-base font-bold text-red-600 hover:bg-red-100"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+                {lobby.length === 0 && (
+                  <li className="text-base text-[var(--foreground)]/50">
+                    아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
+                  </li>
+                )}
+              </ul>
+            </CaseFileCard>
+          </div>
         </div>
 
         {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}
