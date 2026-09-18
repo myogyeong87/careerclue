@@ -29,6 +29,7 @@ export function subscribeGameState(
         phase: data.phase ?? "idle",
         roundId: data.roundId ?? null,
         resumePhase: data.resumePhase ?? null,
+        countdownEndsAt: data.countdownEndsAt ?? null,
       });
     },
     (err) => onError?.(err),
@@ -58,6 +59,15 @@ export async function applySetToGame(set: QuestionSet): Promise<void> {
     phase: "idle",
     roundId: null,
     resumePhase: null,
+    countdownEndsAt: null,
+  });
+}
+
+/** 학생 화면까지 동기화되는 카운트다운 시작. durationMs 뒤 startFirstRound가 호출돼야 함 */
+export async function beginCountdown(durationMs: number): Promise<void> {
+  await updateDoc(GAME_DOC, {
+    phase: "countdown",
+    countdownEndsAt: Date.now() + durationMs,
   });
 }
 
@@ -70,6 +80,7 @@ export async function startFirstRound(): Promise<void> {
     charCountRevealed: false,
     phase: "active",
     roundId: newRoundId(),
+    countdownEndsAt: null,
   });
 }
 
@@ -124,6 +135,7 @@ export async function resetToLobby(): Promise<void> {
     phase: "idle",
     roundId: null,
     resumePhase: null,
+    countdownEndsAt: null,
   });
 }
 

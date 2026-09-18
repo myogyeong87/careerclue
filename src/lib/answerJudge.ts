@@ -35,16 +35,12 @@ export function judgeAnswer(
   if (candidates.includes(norm)) return "correct";
 
   let minDist = Infinity;
-  let minLen = Infinity;
   for (const candidate of candidates) {
     const dist = levenshtein(norm, candidate);
-    if (dist < minDist) {
-      minDist = dist;
-      minLen = Math.min(norm.length, candidate.length);
-    }
+    if (dist < minDist) minDist = dist;
   }
 
-  const threshold = minLen <= 4 ? 1 : 2;
-  if (minDist > 0 && minDist <= threshold) return "reviewNeeded";
+  // 오타 한 글자 수준만 검토 대상으로 인정, 두 글자 이상 차이나면 바로 오답 처리
+  if (minDist === 1) return "reviewNeeded";
   return "wrong";
 }

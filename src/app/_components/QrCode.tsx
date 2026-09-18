@@ -36,9 +36,10 @@ export default function QrCode({
         </div>
       )}
       <p
-        className={`break-all text-center text-xs text-[var(--foreground)]/70 ${
-          size === "sm" ? "max-w-40" : "max-w-64"
+        className={`truncate text-center text-xs text-[var(--foreground)]/70 ${
+          size === "sm" ? "max-w-32" : "max-w-56"
         }`}
+        title={url}
       >
         {url}
       </p>

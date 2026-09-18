@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { judgeAnswer } from "@/lib/answerJudge";
 import {
   advanceRound,
+  beginCountdown,
   isRoundInProgress,
   revealAnswer,
   revealCharCount,
   revealInitials,
   revealNextHint,
-  startFirstRound,
   subscribeGameState,
 } from "@/lib/game";
 import { kickStudent, subscribeLobby, type LobbyStudent } from "@/lib/lobby";
@@ -24,8 +24,9 @@ import ClueBoard from "@/app/_components/ClueBoard";
 import CaseFileCard from "@/app/_components/CaseFileCard";
 import QrCode from "@/app/_components/QrCode";
 import HowToPlayModal from "@/app/_components/HowToPlayModal";
+import Countdown from "@/app/_components/Countdown";
 
-const START_COUNTDOWN_SECONDS = 3;
+const START_COUNTDOWN_MS = 3000;
 
 export default function GameFlowView({
   onOpenSettings,
@@ -39,8 +40,6 @@ export default function GameFlowView({
   }>({ roundId: null, submissions: [] });
   const [busy, setBusy] = useState(false);
   const [lobby, setLobby] = useState<LobbyStudent[]>([]);
-  const [startCountdown, setStartCountdown] = useState<number | null>(null);
-  const countdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const origin = useOrigin();
   const [showHowTo, setShowHowTo] = useState(false);
 
@@ -55,12 +54,6 @@ export default function GameFlowView({
     );
   }, [game.roundId]);
 
-  useEffect(() => {
-    return () => {
-      if (countdownTimer.current) clearTimeout(countdownTimer.current);
-    };
-  }, []);
-
   const submissions =
     submissionsState.roundId === game.roundId ? submissionsState.submissions : [];
 
@@ -74,19 +67,8 @@ export default function GameFlowView({
   };
 
   const handleStartWithCountdown = () => {
-    if (startCountdown !== null) return;
-    let remaining = START_COUNTDOWN_SECONDS;
-    setStartCountdown(remaining);
-    const tick = () => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        startFirstRound().finally(() => setStartCountdown(null));
-        return;
-      }
-      setStartCountdown(remaining);
-      countdownTimer.current = setTimeout(tick, 1000);
-    };
-    countdownTimer.current = setTimeout(tick, 1000);
+    if (game.phase === "countdown") return;
+    beginCountdown(START_COUNTDOWN_MS);
   };
 
   if (game.jobs.length === 0) {
@@ -125,10 +107,8 @@ export default function GameFlowView({
             </div>
           </div>
 
-          {startCountdown !== null ? (
-            <p className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary)]">
-              {startCountdown}
-            </p>
+          {game.phase === "countdown" && game.countdownEndsAt ? (
+            <Countdown endsAt={game.countdownEndsAt} />
           ) : (
             <div className="flex items-center gap-3">
               <button
@@ -150,7 +130,7 @@ export default function GameFlowView({
         </div>
 
         <div className="flex flex-1 items-center justify-center">
-          <div className="grid w-full max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-[1fr_2fr]">
             {origin && (
               <CaseFileCard className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
                 <h3 className="text-lg font-semibold text-[var(--foreground)]/80">
@@ -160,17 +140,17 @@ export default function GameFlowView({
               </CaseFileCard>
             )}
 
-            <CaseFileCard className="flex flex-1 flex-col gap-3 text-left">
+            <CaseFileCard className="flex flex-1 flex-col gap-5 text-left">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/detective-story.png" alt="" className="h-6 w-6" />
                 학생 대기 현황 ({lobby.length}명)
               </h3>
-              <ul className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
+              <ul className="grid max-h-[55vh] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
                 {lobby.map((s) => (
                   <li
                     key={s.studentId}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
                   >
                     <span>
                       <span className="font-semibold">{s.name}</span>

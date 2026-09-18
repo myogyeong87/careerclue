@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { subscribeGameState } from "@/lib/game";
+import { useCountdownAutoStart } from "@/lib/useCountdownAutoStart";
 import {
   MAX_ATTEMPTS,
   submitAttempt,
@@ -12,6 +13,7 @@ import { charCountPreview, toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
 import HowToPlay from "@/app/_components/HowToPlay";
+import Countdown from "@/app/_components/Countdown";
 
 export default function GameView({
   studentId,
@@ -31,6 +33,7 @@ export default function GameView({
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => subscribeGameState(setGame), []);
+  useCountdownAutoStart(game);
   useEffect(() => subscribeStudentSubmissions(studentId, setMyAllSubmissions), [studentId]);
 
   useEffect(() => {
@@ -49,16 +52,66 @@ export default function GameView({
     [myAllSubmissions],
   );
 
+  const sortedMySubmissions = useMemo(
+    () => [...myAllSubmissions].sort((a, b) => a.jobIndex - b.jobIndex),
+    [myAllSubmissions],
+  );
+
   if (game.phase === "finished") {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-        <h1 className="text-2xl">게임이 끝났어요!</h1>
-        <p className="font-[family-name:var(--font-accent)] text-2xl text-[var(--color-primary)]">
-          누적 점수 {cumulativeScore}점
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl">게임이 끝났어요!</h1>
+          <p className="font-[family-name:var(--font-accent)] text-2xl text-[var(--color-primary)]">
+            누적 점수 {cumulativeScore}점
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-semibold text-[var(--foreground)]/60">내 성적표</h2>
+          <ul className="flex flex-col gap-1.5">
+            {sortedMySubmissions.map((s) => {
+              const submittedJob = game.jobs[s.jobIndex];
+              return (
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-surface)] px-4 py-3 text-sm"
+                >
+                  <span className="font-semibold">
+                    {submittedJob?.title ?? `문제 ${s.jobIndex + 1}`}
+                  </span>
+                  <span
+                    className={
+                      s.correct
+                        ? "font-semibold text-[var(--color-primary)]"
+                        : "font-semibold text-red-600"
+                    }
+                  >
+                    {s.correct ? `정답 (+${s.score}점)` : "오답"}
+                  </span>
+                </li>
+              );
+            })}
+            {sortedMySubmissions.length === 0 && (
+              <li className="text-sm text-[var(--foreground)]/60">제출한 문제가 없어요.</li>
+            )}
+          </ul>
+        </div>
+
+        <p className="text-center text-sm text-[var(--foreground)]/70">
+          교사 화면에서 전체 순위를 확인해주세요.
         </p>
-        <p className="text-sm text-[var(--foreground)]/70">
-          교사 화면에서 전체 결과를 확인해주세요.
-        </p>
+      </main>
+    );
+  }
+
+  if (game.phase === "countdown" && game.countdownEndsAt) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/dog.png" alt="탐정 강아지" className="h-20 w-20" />
+        <p className="text-lg text-[var(--foreground)]">곧 시작해요!</p>
+        <Countdown endsAt={game.countdownEndsAt} />
       </main>
     );
   }

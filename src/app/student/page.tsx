@@ -110,7 +110,7 @@ export default function StudentPage() {
             value={studentId}
             onChange={(e) => setStudentIdInput(e.target.value)}
             className="rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-2 text-base outline-none focus:border-[var(--color-primary)]"
-            placeholder="예: 10203"
+            placeholder="1101"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -120,7 +120,7 @@ export default function StudentPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-2 text-base outline-none focus:border-[var(--color-primary)]"
-            placeholder="예: 홍길동"
+            placeholder="홍길동"
           />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}

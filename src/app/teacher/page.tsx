@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { endGameNow, resetToLobby, resumeGame, subscribeGameState } from "@/lib/game";
+import { useCountdownAutoStart } from "@/lib/useCountdownAutoStart";
 import { EMPTY_GAME_STATE, type GameState } from "@/lib/types";
 import QrModal from "@/app/_components/QrModal";
 import GameFlowView from "./_components/GameFlowView";
@@ -15,6 +16,7 @@ export default function TeacherPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => subscribeGameState(setGame), []);
+  useCountdownAutoStart(game);
 
   const isGameFlow = !showSettings && game.phase !== "finished";
   const hasStarted = game.currentIndex > -1;

@@ -75,10 +75,13 @@ function buildRounds(game: GameState, submissions: Submission[]): RoundSummary[]
   return rounds.sort((a, b) => a.jobIndex - b.jobIndex);
 }
 
+const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+
 export default function ResultsTab() {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [expandedRound, setExpandedRound] = useState<string | null>(null);
+  const [revealedCount, setRevealedCount] = useState(0);
   const chimePlayed = useRef(false);
 
   useEffect(() => subscribeGameState(setGame), []);
@@ -106,6 +109,18 @@ export default function ResultsTab() {
 
   const rounds = useMemo(() => buildRounds(game, submissions), [game, submissions]);
 
+  const topCount = Math.min(5, leaderboard.length);
+  const topEntries = leaderboard.slice(0, topCount);
+  const restEntries = leaderboard.slice(topCount);
+  const allTopRevealed = revealedCount >= topCount;
+  const nextPlace = topCount - revealedCount;
+
+  const handleRevealNext = () => {
+    if (allTopRevealed) return;
+    setRevealedCount((c) => c + 1);
+    playRevealChime();
+  };
+
   if (submissions.length === 0) {
     return (
       <p className="text-sm text-[var(--foreground)]/60">
@@ -119,30 +134,73 @@ export default function ResultsTab() {
     <div className="flex flex-col gap-10">
       <section>
         <h2 className="mb-3 text-xl">순위표</h2>
-        <ol className="flex flex-col gap-2">
-          {leaderboard.map((entry, i) => {
-            const rank = i + 1;
-            const isTop3 = rank <= 3;
-            return (
+
+        {restEntries.length > 0 && (
+          <ol className="mb-4 flex flex-col gap-1.5">
+            {restEntries.map((entry, i) => (
               <li
                 key={entry.studentId}
-                className={`flex items-center gap-3 rounded-[var(--radius-card)] px-4 py-3 ${
+                className="flex items-center gap-3 rounded-lg bg-[var(--color-surface)] px-4 py-2 text-sm"
+              >
+                <span className="w-10 text-[var(--foreground)]/60">
+                  {topCount + i + 1}위
+                </span>
+                <span className="flex-1">{entry.studentName}</span>
+                <span className="text-[var(--foreground)]/70">{entry.score}점</span>
+              </li>
+            ))}
+          </ol>
+        )}
+
+        <div className="flex flex-col gap-2">
+          {topEntries.map((entry, idx) => {
+            const place = idx + 1;
+            const revealed = revealedCount >= topCount - place + 1;
+            const isTop3 = place <= 3;
+
+            if (!revealed) {
+              return (
+                <div
+                  key={entry.studentId}
+                  className="flex items-center gap-3 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)]/30 bg-[var(--color-background)] px-4 py-3 text-[var(--foreground)]/40"
+                >
+                  <span className="w-10 font-[family-name:var(--font-accent)] text-lg">
+                    {place}위
+                  </span>
+                  <span className="flex-1 font-semibold">???</span>
+                  <span>??점</span>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={entry.studentId}
+                className={`flex items-center gap-3 rounded-[var(--radius-card)] px-4 py-4 shadow-[var(--shadow-card)] ${
                   isTop3
-                    ? "bg-[var(--color-primary)] text-white shadow-[var(--shadow-card)] animate-pulse"
-                    : "bg-[var(--color-surface)]"
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "bg-[var(--color-accent)]/25 text-[var(--foreground)]"
                 }`}
               >
-                <span className="font-[family-name:var(--font-accent)] w-8 text-lg">
-                  {rank}
-                </span>
-                <span className="flex-1 font-semibold">{entry.studentName}</span>
-                <span className="font-[family-name:var(--font-accent)] text-lg">
+                <span className="w-10 text-2xl">{MEDAL[place] ?? `${place}위`}</span>
+                <span className="flex-1 text-lg font-semibold">{entry.studentName}</span>
+                <span className="font-[family-name:var(--font-accent)] text-xl">
                   {entry.score}점
                 </span>
-              </li>
+              </div>
             );
           })}
-        </ol>
+        </div>
+
+        {!allTopRevealed && (
+          <button
+            type="button"
+            onClick={handleRevealNext}
+            className="mt-4 w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white"
+          >
+            🎉 {nextPlace}위 공개하기
+          </button>
+        )}
       </section>
 
       <section>

@@ -12,7 +12,7 @@ export interface QuestionSet {
   scoring: number[]; // 기본 [100, 80, 60, 40, 20]
 }
 
-export type GamePhase = "idle" | "active" | "revealed" | "finished";
+export type GamePhase = "idle" | "countdown" | "active" | "revealed" | "finished";
 
 export interface GameState {
   activeSetId: string | null;
@@ -26,6 +26,8 @@ export interface GameState {
   roundId: string | null;
   /** phase가 finished로 바뀌기 직전 단계. 게임 화면으로 되돌아갈 때 복원용 */
   resumePhase: "active" | "revealed" | null;
+  /** phase가 countdown일 때 카운트다운이 끝나는 시각(ms epoch). 모든 화면이 동일한 시점을 기준으로 표시 */
+  countdownEndsAt: number | null;
 }
 
 export interface SubmissionAttempt {
@@ -61,4 +63,5 @@ export const EMPTY_GAME_STATE: GameState = {
   phase: "idle",
   roundId: null,
   resumePhase: null,
+  countdownEndsAt: null,
 };
