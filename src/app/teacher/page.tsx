@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { endGameNow, isRoundInProgress, resetToLobby, subscribeGameState } from "@/lib/game";
+import { endGameNow, resetToLobby, subscribeGameState } from "@/lib/game";
 import { EMPTY_GAME_STATE, type GameState } from "@/lib/types";
 import QrModal from "@/app/_components/QrModal";
 import GameFlowView from "./_components/GameFlowView";
@@ -52,6 +52,25 @@ export default function TeacherPage() {
     }
   };
 
+  const handleBackToLobby = async () => {
+    if (busy) return;
+    if (
+      !window.confirm(
+        "대기실로 돌아갈까요? 지금까지의 제출 기록은 초기화되고, 같은 세트로 다시 시작할 수 있어요.",
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetToLobby();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const hasStarted = game.currentIndex > -1;
+
   return (
     <main
       className={`mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 ${
@@ -61,7 +80,7 @@ export default function TeacherPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl">{heading}</h1>
         <div className="flex items-center gap-4">
-          {!showSettings && isRoundInProgress(game) && (
+          {!showSettings && hasStarted && game.phase !== "finished" && (
             <>
               <button
                 type="button"
@@ -80,6 +99,16 @@ export default function TeacherPage() {
                 ■ 게임 종료
               </button>
             </>
+          )}
+          {!showSettings && game.phase === "finished" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleBackToLobby}
+              className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            >
+              🔄 대기실로 돌아가기
+            </button>
           )}
           {!showSettings && (
             <button
