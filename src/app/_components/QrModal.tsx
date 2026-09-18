@@ -42,7 +42,7 @@ export default function QrModal({
             QR 코드 생성 중...
           </div>
         )}
-        <p className="max-w-[18rem] break-all text-center text-sm text-[var(--foreground)]/70">
+        <p className="max-w-64 break-all text-center text-xs text-[var(--foreground)]/70">
           {url}
         </p>
         <button
