@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   advanceRound,
   isRoundInProgress,
@@ -10,6 +10,7 @@ import {
   startFirstRound,
   subscribeGameState,
 } from "@/lib/game";
+import { kickStudent, subscribeLobby, type LobbyStudent } from "@/lib/lobby";
 import {
   overrideSubmissionVerdict,
   subscribeRoundSubmissions,
@@ -17,6 +18,8 @@ import {
 import { toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
+
+const START_COUNTDOWN_SECONDS = 3;
 
 export default function GameFlowView({
   onOpenSettings,
@@ -29,8 +32,12 @@ export default function GameFlowView({
     submissions: Submission[];
   }>({ roundId: null, submissions: [] });
   const [busy, setBusy] = useState(false);
+  const [lobby, setLobby] = useState<LobbyStudent[]>([]);
+  const [startCountdown, setStartCountdown] = useState<number | null>(null);
+  const countdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => subscribeGameState(setGame), []);
+  useEffect(() => subscribeLobby(setLobby), []);
 
   useEffect(() => {
     if (!game.roundId) return;
@@ -39,6 +46,12 @@ export default function GameFlowView({
       setSubmissionsState({ roundId, submissions }),
     );
   }, [game.roundId]);
+
+  useEffect(() => {
+    return () => {
+      if (countdownTimer.current) clearTimeout(countdownTimer.current);
+    };
+  }, []);
 
   const submissions =
     submissionsState.roundId === game.roundId ? submissionsState.submissions : [];
@@ -50,6 +63,22 @@ export default function GameFlowView({
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleStartWithCountdown = () => {
+    if (startCountdown !== null) return;
+    let remaining = START_COUNTDOWN_SECONDS;
+    setStartCountdown(remaining);
+    const tick = () => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        startFirstRound().finally(() => setStartCountdown(null));
+        return;
+      }
+      setStartCountdown(remaining);
+      countdownTimer.current = setTimeout(tick, 1000);
+    };
+    countdownTimer.current = setTimeout(tick, 1000);
   };
 
   if (game.jobs.length === 0) {
@@ -71,18 +100,59 @@ export default function GameFlowView({
 
   if (!isRoundInProgress(game)) {
     return (
-      <div className="flex flex-col items-center gap-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center gap-6 py-10 text-center">
         <p className="text-lg text-[var(--foreground)]">
           총 {game.jobs.length}문제가 준비됐어요.
         </p>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => runAction(startFirstRound)}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
-        >
-          라운드 시작
-        </button>
+
+        <div className="flex w-full max-w-md flex-col gap-2 text-left">
+          <h3 className="text-sm font-semibold text-[var(--foreground)]/70">
+            학생 대기 현황 ({lobby.length}명)
+          </h3>
+          <ul className="flex flex-col gap-1.5">
+            {lobby.map((s) => (
+              <li
+                key={s.studentId}
+                className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-surface)] px-3 py-2 text-sm"
+              >
+                <span>
+                  <span className="font-semibold">{s.name}</span>
+                  <span className="ml-1 text-[var(--foreground)]/60">
+                    ({s.studentId})
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => kickStudent(s.studentId)}
+                  title="퇴장시키기"
+                  aria-label={`${s.name} 퇴장시키기`}
+                  className="rounded-full px-2 py-0.5 text-sm font-bold text-red-600 hover:bg-red-100"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+            {lobby.length === 0 && (
+              <li className="text-sm text-[var(--foreground)]/50">
+                아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {startCountdown !== null ? (
+          <p className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary)]">
+            {startCountdown}
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={handleStartWithCountdown}
+            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
+          >
+            게임 시작
+          </button>
+        )}
       </div>
     );
   }

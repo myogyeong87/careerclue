@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { checkOrRegisterStudent } from "@/lib/roster";
+import { joinLobby, subscribeLobbyPresence } from "@/lib/lobby";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import GameView from "./_components/GameView";
 
@@ -17,6 +18,24 @@ export default function StudentPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [joined, setJoined] = useState<JoinedStudent | null>(null);
+  const [kicked, setKicked] = useState(false);
+
+  useEffect(() => {
+    if (!joined) return;
+    let cancelled = false;
+    let unsubscribe = () => {};
+    (async () => {
+      await joinLobby(joined.studentId, joined.name);
+      if (cancelled) return;
+      unsubscribe = subscribeLobbyPresence(joined.studentId, (present) => {
+        if (!present) setKicked(true);
+      });
+    })();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [joined]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +62,27 @@ export default function StudentPage() {
       setSubmitting(false);
     }
   };
+
+  if (kicked) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
+        <h1 className="text-xl">접속이 초기화됐어요</h1>
+        <p className="text-sm text-[var(--foreground)]/70">
+          선생님이 접속을 초기화했어요. 학번과 이름을 다시 확인하고 접속해주세요.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setKicked(false);
+            setJoined(null);
+          }}
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-white"
+        >
+          다시 접속하기
+        </button>
+      </main>
+    );
+  }
 
   if (joined) {
     return <GameView studentId={joined.studentId} studentName={joined.name} />;

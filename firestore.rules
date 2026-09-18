@@ -12,6 +12,10 @@ service cloud.firestore {
       match /submissions/{submissionId} {
         allow read, write: if true;
       }
+
+      match /lobby/{studentId} {
+        allow read, write: if true;
+      }
     }
     match /roster/{studentId} {
       allow read, write: if true;

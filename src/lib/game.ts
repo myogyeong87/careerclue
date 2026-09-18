@@ -1,6 +1,7 @@
 import { doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { clearAllSubmissions, gradeRound } from "./submissions";
+import { clearLobby } from "./lobby";
 import { DEFAULT_SCORING, EMPTY_GAME_STATE, type GameState, type QuestionSet } from "./types";
 
 const GAME_DOC = doc(db, "games", "current");
@@ -43,6 +44,7 @@ function newRoundId(): string {
 
 export async function applySetToGame(set: QuestionSet): Promise<void> {
   await clearAllSubmissions();
+  await clearLobby();
   await setDoc(GAME_DOC, {
     activeSetId: set.id,
     jobs: set.jobs,

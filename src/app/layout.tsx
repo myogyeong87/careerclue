@@ -23,7 +23,7 @@ const doHyeon = Do_Hyeon({
 });
 
 export const metadata: Metadata = {
-  title: "잡셜록",
+  title: "커리어탐정",
   description: "직업의 단서를 모아 추리하는 진로 수업용 실시간 퀴즈",
 };
 

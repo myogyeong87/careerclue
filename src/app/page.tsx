@@ -29,7 +29,7 @@ export default function RoleSelectPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 text-center">
       <div>
-        <h1 className="text-3xl">잡셜록</h1>
+        <h1 className="text-3xl">커리어탐정</h1>
         <p className="mt-2 text-sm text-[var(--foreground)]/70">
           단서를 모아 직업을 추리하는 진로 수업 퀴즈
         </p>
