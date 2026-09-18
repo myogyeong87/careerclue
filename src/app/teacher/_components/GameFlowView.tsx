@@ -112,24 +112,46 @@ export default function GameFlowView({
 
   if (!isRoundInProgress(game)) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
-        <div className="flex w-full max-w-lg flex-col gap-6">
-          <CaseFileCard className="flex flex-col items-center gap-5 text-center">
+      <div className="flex flex-1 flex-col gap-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-left">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
-
-            <div className="flex flex-col gap-2">
-              <h2 className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-primary)]">
-                사건 파일 준비 완료!
+            <img src="/dog.png" alt="탐정 강아지" className="h-20 w-20 shrink-0" />
+            <div>
+              <h2 className="font-[family-name:var(--font-heading)] text-3xl text-[var(--color-primary)]">
+                커리어탐정
               </h2>
-              <p className="text-lg leading-relaxed text-[var(--foreground)]">
-                총 {game.jobs.length}문제가 준비됐어요.
-              </p>
+              <p className="text-lg text-[var(--foreground)]">사건 파일 준비 완료!</p>
             </div>
-          </CaseFileCard>
+          </div>
 
+          {startCountdown !== null ? (
+            <p className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary)]">
+              {startCountdown}
+            </p>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowHowTo(true)}
+                className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-[var(--color-primary)]"
+              >
+                ❓ 게임 방법
+              </button>
+              <button
+                type="button"
+                onClick={handleStartWithCountdown}
+                className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
+              >
+                게임 시작
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2">
           {origin && (
-            <CaseFileCard className="flex flex-col items-center gap-3 text-center">
+            <CaseFileCard className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
               <h3 className="text-lg font-semibold text-[var(--foreground)]/80">
                 📱 이 QR로 접속하세요
               </h3>
@@ -137,13 +159,13 @@ export default function GameFlowView({
             </CaseFileCard>
           )}
 
-          <CaseFileCard className="flex flex-col gap-3 text-left">
+          <CaseFileCard className="flex flex-1 flex-col gap-3 text-left">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/detective-story.png" alt="" className="h-6 w-6" />
               학생 대기 현황 ({lobby.length}명)
             </h3>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
               {lobby.map((s) => (
                 <li
                   key={s.studentId}
@@ -173,29 +195,6 @@ export default function GameFlowView({
               )}
             </ul>
           </CaseFileCard>
-
-          {startCountdown !== null ? (
-            <p className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary)]">
-              {startCountdown}
-            </p>
-          ) : (
-            <div className="flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowHowTo(true)}
-                className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-[var(--color-primary)]"
-              >
-                ❓ 게임 방법
-              </button>
-              <button
-                type="button"
-                onClick={handleStartWithCountdown}
-                className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
-              >
-                게임 시작
-              </button>
-            </div>
-          )}
         </div>
 
         {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}
