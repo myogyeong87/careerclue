@@ -16,6 +16,7 @@ import {
 } from "@/lib/submissions";
 import { toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
+import ClueBoard from "@/app/_components/ClueBoard";
 
 export default function GameFlowView({
   onOpenSettings,
@@ -91,33 +92,21 @@ export default function GameFlowView({
   const revealed = game.phase === "revealed";
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-semibold text-[var(--foreground)]">
-          문제 {game.currentIndex + 1} / {game.jobs.length}
-        </p>
-        {revealed && (
-          <p className="font-[family-name:var(--font-heading)] text-3xl">
-            정답: {job.title}
-          </p>
-        )}
-      </div>
+    <div className="flex flex-1 flex-col gap-6">
+      <p className="text-lg font-semibold text-[var(--foreground)]">
+        문제 {game.currentIndex + 1} / {game.jobs.length}
+      </p>
 
-      <div className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]">
-        {job.hints.slice(0, game.hintsOpen).map((hint, i) => (
-          <p key={i} className="text-xl leading-snug text-[var(--foreground)]">
-            <span className="font-[family-name:var(--font-accent)] mr-3 text-[var(--color-primary)]">
-              {game.scoring[i]}점
-            </span>
-            {hint}
-          </p>
-        ))}
-        {game.initialsRevealed && (
-          <p className="mt-2 font-[family-name:var(--font-accent)] text-3xl tracking-widest text-[var(--color-primary)]">
-            초성 힌트: {toChosung(job.title)}
-          </p>
-        )}
-      </div>
+      <ClueBoard
+        hints={job.hints}
+        hintsOpen={game.hintsOpen}
+        scoring={game.scoring}
+        initialsRevealed={game.initialsRevealed}
+        chosung={toChosung(job.title)}
+        revealed={revealed}
+        answer={job.title}
+        size="large"
+      />
 
       {!revealed && (
         <div className="flex flex-wrap gap-3">

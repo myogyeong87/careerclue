@@ -12,6 +12,7 @@ import {
 import { applySetToGame, isRoundInProgress, subscribeGameState } from "@/lib/game";
 import { DEFAULT_QUESTION_SET } from "@/lib/defaultQuestionSet";
 import { DEFAULT_SCORING, type GameState, type QuestionSet } from "@/lib/types";
+import SetEditor from "./SetEditor";
 
 function downloadJson(filename: string, content: string) {
   const blob = new Blob([content], { type: "application/json" });
@@ -28,8 +29,7 @@ export default function QuestionSetsTab() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [game, setGame] = useState<GameState | null>(null);
 
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [showImport, setShowImport] = useState(false);
   const [importText, setImportText] = useState("");
@@ -69,7 +69,8 @@ export default function QuestionSetsTab() {
   const handleDuplicate = async (set: QuestionSet) => {
     setBusyId(set.id);
     try {
-      await duplicateQuestionSet(set);
+      const newId = await duplicateQuestionSet(set);
+      setEditingId(newId);
     } finally {
       setBusyId(null);
     }
@@ -80,6 +81,7 @@ export default function QuestionSetsTab() {
     setBusyId(set.id);
     try {
       await deleteQuestionSet(set.id);
+      if (editingId === set.id) setEditingId(null);
     } finally {
       setBusyId(null);
     }
@@ -90,11 +92,12 @@ export default function QuestionSetsTab() {
   };
 
   const handleCreateNew = async () => {
-    const name = newName.trim();
-    if (!name) return;
-    await createQuestionSet({ name, jobs: [], scoring: DEFAULT_SCORING });
-    setNewName("");
-    setShowNewForm(false);
+    const newId = await createQuestionSet({
+      name: "새 세트",
+      jobs: [],
+      scoring: DEFAULT_SCORING,
+    });
+    setEditingId(newId);
   };
 
   const handleImportDefault = async () => {
@@ -113,12 +116,29 @@ export default function QuestionSetsTab() {
     setShowImport(false);
   };
 
+  const handleBackFromEditor = (dirty: boolean) => {
+    if (dirty && !window.confirm("저장하지 않은 변경사항이 있어요. 그래도 나갈까요?")) {
+      return;
+    }
+    setEditingId(null);
+  };
+
+  const editingSet = editingId ? sets.find((s) => s.id === editingId) ?? null : null;
+
+  if (editingId) {
+    return editingSet ? (
+      <SetEditor key={editingSet.id} initial={editingSet} onBack={handleBackFromEditor} />
+    ) : (
+      <p className="text-sm text-[var(--foreground)]/60">불러오는 중...</p>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={() => setShowNewForm((v) => !v)}
+          onClick={handleCreateNew}
           className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
         >
           새 세트 만들기
@@ -138,25 +158,6 @@ export default function QuestionSetsTab() {
           기본 세트 20 가져오기
         </button>
       </div>
-
-      {showNewForm && (
-        <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="세트 이름"
-            className="min-w-0 flex-1 rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
-          />
-          <button
-            type="button"
-            onClick={handleCreateNew}
-            className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white"
-          >
-            만들기
-          </button>
-        </div>
-      )}
 
       {showImport && (
         <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
@@ -230,6 +231,13 @@ export default function QuestionSetsTab() {
                   className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 font-semibold text-white disabled:opacity-60"
                 >
                   적용하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingId(set.id)}
+                  className="rounded-lg bg-white px-3 py-1.5 font-semibold"
+                >
+                  편집
                 </button>
                 <button
                   type="button"

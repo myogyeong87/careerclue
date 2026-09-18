@@ -10,6 +10,7 @@ import {
 } from "@/lib/submissions";
 import { charCountPreview, toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
+import ClueBoard from "@/app/_components/ClueBoard";
 
 export default function GameView({
   studentId,
@@ -117,22 +118,20 @@ export default function GameView({
         <span>누적 점수 {cumulativeScore}점</span>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
+      <div className="flex flex-col gap-2">
         <p className="text-sm font-semibold text-[var(--foreground)]/60">사건 파일</p>
-        {job.hints.slice(0, game.hintsOpen).map((hint, i) => (
-          <p key={i} className="text-sm">
-            <span className="font-[family-name:var(--font-accent)] mr-2 text-[var(--color-primary)]">
-              {game.scoring[i]}점
-            </span>
-            {hint}
-          </p>
-        ))}
-        <p className="mt-2 font-mono text-lg tracking-widest">
-          {charCountPreview(job.title)}
-        </p>
-        {game.initialsRevealed && (
-          <p className="font-[family-name:var(--font-accent)] text-lg tracking-widest text-[var(--color-primary)]">
-            초성: {toChosung(job.title)}
+        <ClueBoard
+          hints={job.hints}
+          hintsOpen={game.hintsOpen}
+          scoring={game.scoring}
+          initialsRevealed={game.initialsRevealed}
+          chosung={toChosung(job.title)}
+          revealed={revealed}
+          answer={job.title}
+        />
+        {!revealed && (
+          <p className="mt-1 font-mono text-lg tracking-widest text-[var(--foreground)]/70">
+            {charCountPreview(job.title)}
           </p>
         )}
       </div>
@@ -173,9 +172,6 @@ export default function GameView({
         </>
       ) : (
         <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
-          <p className="font-[family-name:var(--font-heading)] text-xl">
-            정답: {job.title}
-          </p>
           {mySubmission ? (
             <>
               <div className="flex flex-col gap-1 text-sm">

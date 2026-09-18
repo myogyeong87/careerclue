@@ -13,6 +13,8 @@ export default function TeacherPage() {
 
   useEffect(() => subscribeGameState(setGame), []);
 
+  const isGameFlow = !showSettings && game.phase !== "finished";
+
   const heading = showSettings
     ? "설정"
     : game.phase === "finished"
@@ -20,7 +22,11 @@ export default function TeacherPage() {
       : "잡셜록";
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">
+    <main
+      className={`mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 ${
+        isGameFlow ? "max-w-none px-8" : "max-w-5xl"
+      }`}
+    >
       <div className="flex items-center justify-between">
         <h1 className="text-2xl">{heading}</h1>
         {!showSettings && (

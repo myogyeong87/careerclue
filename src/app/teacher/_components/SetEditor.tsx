@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { subscribeQuestionSets, updateQuestionSet } from "@/lib/questionSets";
+import { useState } from "react";
+import { updateQuestionSet } from "@/lib/questionSets";
 import { charCountPreview } from "@/lib/text";
 import type { Job, QuestionSet } from "@/lib/types";
 
@@ -16,41 +16,13 @@ function reorder<T>(list: T[], from: number, to: number): T[] {
   return copy;
 }
 
-export default function EditSetTab() {
-  const [sets, setSets] = useState<QuestionSet[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  useEffect(() => subscribeQuestionSets(setSets), []);
-
-  const selected = sets.find((s) => s.id === selectedId) ?? null;
-
-  return (
-    <div className="flex flex-col gap-4">
-      <select
-        value={selectedId ?? ""}
-        onChange={(e) => setSelectedId(e.target.value || null)}
-        className="w-full max-w-xs rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-2 text-sm"
-      >
-        <option value="">세트 선택...</option>
-        {sets.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
-
-      {selected ? (
-        <SetEditor key={selected.id} initial={selected} />
-      ) : (
-        <p className="text-sm text-[var(--foreground)]/60">
-          편집할 세트를 선택하세요.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function SetEditor({ initial }: { initial: QuestionSet }) {
+export default function SetEditor({
+  initial,
+  onBack,
+}: {
+  initial: QuestionSet;
+  onBack: (dirty: boolean) => void;
+}) {
   const [draft, setDraft] = useState<QuestionSet>(() => structuredClone(initial));
   const [expandedJob, setExpandedJob] = useState<number | null>(null);
   const [dragJobIndex, setDragJobIndex] = useState<number | null>(null);
@@ -79,6 +51,7 @@ function SetEditor({ initial }: { initial: QuestionSet }) {
 
   const addJob = () => {
     setDraft((d) => ({ ...d, jobs: [...d.jobs, emptyJob()] }));
+    setExpandedJob(draft.jobs.length);
     setDirty(true);
   };
 
@@ -119,6 +92,14 @@ function SetEditor({ initial }: { initial: QuestionSet }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <button
+        type="button"
+        onClick={() => onBack(dirty)}
+        className="w-fit text-sm text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+      >
+        ← 목록으로
+      </button>
+
       <div className="flex flex-wrap items-center gap-3">
         <input
           type="text"
@@ -146,6 +127,12 @@ function SetEditor({ initial }: { initial: QuestionSet }) {
           문제 추가
         </button>
       </div>
+
+      {draft.jobs.length === 0 && (
+        <p className="text-sm text-[var(--foreground)]/60">
+          아직 문제가 없어요. &quot;문제 추가&quot;로 첫 문제를 만들어보세요.
+        </p>
+      )}
 
       <div className="flex flex-col gap-2">
         {draft.jobs.map((job, jobIndex) => {
