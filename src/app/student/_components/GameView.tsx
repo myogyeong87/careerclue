@@ -11,6 +11,7 @@ import {
 import { charCountPreview, toChosung } from "@/lib/text";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
+import HowToPlay from "@/app/_components/HowToPlay";
 
 export default function GameView({
   studentId,
@@ -64,15 +65,18 @@ export default function GameView({
 
   if (game.jobs.length === 0 || game.phase === "idle") {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-4 px-4 py-8 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
         <h1 className="text-2xl">
           {studentName}({studentId})님, 안녕하세요!
         </h1>
         <p className="text-sm text-[var(--foreground)]/70">
-          게임이 곧 시작돼요. 잠시만 기다려주세요.
+          게임이 곧 시작돼요. 기다리는 동안 게임 방법을 읽어보세요!
         </p>
+        <div className="w-full text-left">
+          <HowToPlay />
+        </div>
       </main>
     );
   }
