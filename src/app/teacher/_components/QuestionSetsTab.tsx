@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   createQuestionSet,
   deleteQuestionSet,
@@ -9,7 +9,13 @@ import {
   questionSetToExportJson,
   subscribeQuestionSets,
 } from "@/lib/questionSets";
-import { applySetToGame, isRoundInProgress, subscribeGameState } from "@/lib/game";
+import {
+  applyRandomPoolToGame,
+  applySetToGame,
+  buildUniqueJobPool,
+  isRoundInProgress,
+  subscribeGameState,
+} from "@/lib/game";
 import { DEFAULT_QUESTION_SET } from "@/lib/defaultQuestionSet";
 import { DEFAULT_SCORING, type GameState, type QuestionSet } from "@/lib/types";
 import SetEditor from "./SetEditor";
@@ -35,6 +41,13 @@ export default function QuestionSetsTab() {
   const [importText, setImportText] = useState("");
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  const [randomCounts, setRandomCounts] = useState<Record<string, string>>({});
+  const [randomMessages, setRandomMessages] = useState<Record<string, string | null>>({});
+
+  const [poolCount, setPoolCount] = useState("");
+  const [poolMessage, setPoolMessage] = useState<string | null>(null);
+  const [poolBusy, setPoolBusy] = useState(false);
 
   useEffect(() => {
     const unsubSets = subscribeQuestionSets(setSets, (err) =>
@@ -63,6 +76,61 @@ export default function QuestionSetsTab() {
       await applySetToGame(set);
     } finally {
       setBusyId(null);
+    }
+  };
+
+  /** 문제 수 입력을 파싱. 빈 값이면 null(=전체 적용), 유효하지 않으면 undefined 반환 */
+  const parseCountInput = (raw: string): number | null | undefined => {
+    const trimmed = raw.trim();
+    if (trimmed === "") return null;
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || n <= 0) return undefined;
+    return Math.floor(n);
+  };
+
+  const handleRandomApply = async (set: QuestionSet) => {
+    const count = parseCountInput(randomCounts[set.id] ?? "");
+    if (count === undefined) {
+      setRandomMessages((m) => ({ ...m, [set.id]: "1 이상의 숫자를 입력해주세요." }));
+      return;
+    }
+    if (!confirmIfRoundInProgress()) return;
+    const message =
+      count != null && count > set.jobs.length
+        ? `문제 수가 최대 ${set.jobs.length}개로 제한됐어요.`
+        : null;
+    setBusyId(set.id);
+    try {
+      await applySetToGame(set, count);
+      setRandomMessages((m) => ({ ...m, [set.id]: message }));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const uniquePool = useMemo(() => buildUniqueJobPool(sets), [sets]);
+
+  const handlePoolApply = async () => {
+    const count = parseCountInput(poolCount);
+    if (count === undefined) {
+      setPoolMessage("1 이상의 숫자를 입력해주세요.");
+      return;
+    }
+    if (uniquePool.length === 0) {
+      setPoolMessage("적용할 수 있는 문제가 없어요.");
+      return;
+    }
+    if (!confirmIfRoundInProgress()) return;
+    const message =
+      count != null && count > uniquePool.length
+        ? `문제 수가 최대 ${uniquePool.length}개로 제한됐어요.`
+        : null;
+    setPoolBusy(true);
+    try {
+      await applyRandomPoolToGame(uniquePool, count);
+      setPoolMessage(message);
+    } finally {
+      setPoolBusy(false);
     }
   };
 
@@ -159,6 +227,38 @@ export default function QuestionSetsTab() {
         </button>
       </div>
 
+      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
+        <h3 className="font-[family-name:var(--font-heading)] text-sm font-semibold">
+          전체 세트 통합 랜덤 적용
+        </h3>
+        <p className="text-xs text-[var(--foreground)]/60">
+          모든 세트의 문제를 합쳐(같은 직업은 하나만) 문제 수만큼 무작위로 뽑아 적용해요. 현재
+          합친 문제 수: {uniquePool.length}개
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            value={poolCount}
+            onChange={(e) => {
+              setPoolCount(e.target.value);
+              setPoolMessage(null);
+            }}
+            placeholder="문제 수 (비우면 전체)"
+            className="w-40 rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-1.5 text-sm outline-none focus:border-[var(--color-primary)]"
+          />
+          <button
+            type="button"
+            disabled={poolBusy}
+            onClick={handlePoolApply}
+            className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            통합 랜덤 적용
+          </button>
+        </div>
+        {poolMessage && <p className="text-sm text-[var(--foreground)]/70">{poolMessage}</p>}
+      </div>
+
       {showImport && (
         <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
           <textarea
@@ -232,6 +332,25 @@ export default function QuestionSetsTab() {
                 >
                   적용하기
                 </button>
+                <input
+                  type="number"
+                  min={1}
+                  value={randomCounts[set.id] ?? ""}
+                  onChange={(e) => {
+                    setRandomCounts((m) => ({ ...m, [set.id]: e.target.value }));
+                    setRandomMessages((m) => ({ ...m, [set.id]: null }));
+                  }}
+                  placeholder="문제 수"
+                  className="w-20 rounded-lg border border-[var(--color-primary)]/30 bg-white px-2 py-1.5 outline-none focus:border-[var(--color-primary)]"
+                />
+                <button
+                  type="button"
+                  disabled={busyId === set.id}
+                  onClick={() => handleRandomApply(set)}
+                  className="rounded-lg bg-white px-3 py-1.5 font-semibold text-[var(--color-primary)] disabled:opacity-60"
+                >
+                  세트 내 랜덤 적용
+                </button>
                 <button
                   type="button"
                   onClick={() => setEditingId(set.id)}
@@ -263,6 +382,9 @@ export default function QuestionSetsTab() {
                   삭제
                 </button>
               </div>
+              {randomMessages[set.id] && (
+                <p className="text-sm text-[var(--foreground)]/70">{randomMessages[set.id]}</p>
+              )}
             </div>
           );
         })}

@@ -2,7 +2,13 @@ import { doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { clearAllSubmissions, gradeRound } from "./submissions";
 import { clearLobby } from "./lobby";
-import { DEFAULT_SCORING, EMPTY_GAME_STATE, type GameState, type QuestionSet } from "./types";
+import {
+  DEFAULT_SCORING,
+  EMPTY_GAME_STATE,
+  type GameState,
+  type Job,
+  type QuestionSet,
+} from "./types";
 
 const GAME_DOC = doc(db, "games", "current");
 
@@ -45,13 +51,65 @@ function newRoundId(): string {
   return crypto.randomUUID();
 }
 
-export async function applySetToGame(set: QuestionSet): Promise<void> {
+function shuffle<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** count가 null이면 원본 그대로, 아니면 중복 없이 무작위로 count개를 뽑아 순서도 섞어 반환 (count는 jobs.length로 자동 제한) */
+function pickRandomJobs(jobs: Job[], count: number | null): Job[] {
+  if (count == null) return jobs;
+  const clamped = Math.min(Math.max(0, Math.floor(count)), jobs.length);
+  return shuffle(jobs).slice(0, clamped);
+}
+
+/** 여러 세트의 jobs를 하나의 풀로 합치되, title이 같은 문제는 처음 나온 것만 남김 */
+export function buildUniqueJobPool(sets: QuestionSet[]): Job[] {
+  const seenTitles = new Set<string>();
+  const pool: Job[] = [];
+  for (const set of sets) {
+    for (const job of set.jobs) {
+      if (seenTitles.has(job.title)) continue;
+      seenTitles.add(job.title);
+      pool.push(job);
+    }
+  }
+  return pool;
+}
+
+/** count가 주어지면 set.jobs에서 무작위로 count개(순서 섞임)만 뽑아 적용, 비워두면 세트 전체를 순서 그대로 적용 */
+export async function applySetToGame(set: QuestionSet, count: number | null = null): Promise<void> {
+  const jobs = pickRandomJobs(set.jobs, count);
   await clearAllSubmissions();
   await clearLobby();
   await setDoc(GAME_DOC, {
     activeSetId: set.id,
-    jobs: set.jobs,
+    jobs,
     scoring: set.scoring,
+    currentIndex: -1,
+    hintsOpen: 1,
+    initialsRevealed: false,
+    charCountRevealed: false,
+    phase: "idle",
+    roundId: null,
+    resumePhase: null,
+    countdownEndsAt: null,
+  });
+}
+
+/** 여러 세트를 합친 문제 풀(pool)에서 count개를 무작위로 뽑아 적용, 비워두면 풀 전체를 순서 그대로 적용. 특정 세트에 속한 게 아니므로 activeSetId는 null, scoring은 기본값 사용 */
+export async function applyRandomPoolToGame(pool: Job[], count: number | null): Promise<void> {
+  const jobs = pickRandomJobs(pool, count);
+  await clearAllSubmissions();
+  await clearLobby();
+  await setDoc(GAME_DOC, {
+    activeSetId: null,
+    jobs,
+    scoring: DEFAULT_SCORING,
     currentIndex: -1,
     hintsOpen: 1,
     initialsRevealed: false,
