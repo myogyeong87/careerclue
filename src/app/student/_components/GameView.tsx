@@ -164,14 +164,23 @@ export default function GameView({
       charCountRevealed={game.charCountRevealed}
       revealed={game.phase === "revealed"}
       header={
-        <div className="flex items-center justify-between text-sm text-[var(--color-muted)]">
-          <span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-lg font-semibold text-[var(--color-muted)]">
             문제 {game.currentIndex + 1} / {game.jobs.length}
           </span>
-          <span>누적 점수 {cumulativeScore}점</span>
+          <span className="rounded-full bg-[var(--color-primary)] px-4 py-1.5 font-[family-name:var(--font-accent)] text-xl text-[var(--color-on-primary)] shadow-[var(--shadow-card)]">
+            ⭐ {cumulativeScore}점
+          </span>
         </div>
       }
-      footer={<p className="text-sm text-[var(--color-muted)]">누적 점수 {cumulativeScore}점</p>}
+      footer={
+        <div className="flex items-center justify-between rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] bg-[var(--color-surface)] px-5 py-3 shadow-[var(--shadow-card)]">
+          <span className="text-xl font-semibold">누적 점수</span>
+          <span className="font-[family-name:var(--font-accent)] text-4xl text-[var(--color-primary-ink)]">
+            {cumulativeScore}점
+          </span>
+        </div>
+      }
     />
   );
 }
