@@ -75,30 +75,7 @@ export default function PracticeStage({ practice }: { practice: PracticeState })
         onReveal={() => revealPracticeAnswer(practice)}
         advanceLabel="연습 종료"
         onAdvance={endPractice}
-        resultExtra={<StageScores scoring={PRACTICE_SCORING} />}
       />
-    </div>
-  );
-}
-
-/** 정답 공개 때 '몇 번째 단서에서 맞히면 몇 점'인지 크게 보여줌 */
-function StageScores({ scoring }: { scoring: number[] }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-center text-2xl font-semibold">어느 단서에서 맞히면 몇 점?</p>
-      <div className="grid grid-cols-5 gap-3">
-        {scoring.map((score, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center rounded-[var(--radius-card)] border-2 border-[var(--color-border)] bg-[var(--color-surface)] py-3 shadow-[var(--shadow-card)]"
-          >
-            <span className="text-xl text-[var(--color-muted)]">{i + 1}번째 단서</span>
-            <span className="font-[family-name:var(--font-accent)] text-6xl text-[var(--color-primary-ink)]">
-              {score}점
-            </span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

@@ -107,7 +107,15 @@ export default function PinGate({ children }: { children: React.ReactNode }) {
           className="flex w-full max-w-sm flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
         >
           <p className="text-center text-lg font-semibold">
-            {state === "create" ? "처음 사용하시네요! 교사 PIN을 만들어 주세요." : "교사 PIN을 입력해 주세요."}
+            {state === "create" ? (
+              <>
+                처음 사용하시네요!
+                <br />
+                교사 PIN을 만들어 주세요.
+              </>
+            ) : (
+              "교사 PIN을 입력해 주세요."
+            )}
           </p>
           {state === "create" && (
             <p className="text-center text-sm text-[var(--color-muted)]">숫자 4~6자리</p>
