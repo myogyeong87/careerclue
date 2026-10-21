@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { isRoundInProgress, subscribeGameState } from "@/lib/game";
 import { useCountdownAutoStart } from "@/lib/useCountdownAutoStart";
-import { subscribeStudentSubmissions } from "@/lib/submissions";
+import { subscribeAllSubmissions, subscribeStudentSubmissions } from "@/lib/submissions";
+import { buildLeaderboard } from "@/lib/ranking";
 import { PRACTICE_JOB, PRACTICE_SCORING } from "@/lib/practice";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import HowToPlay from "@/app/_components/HowToPlay";
@@ -34,11 +35,23 @@ export default function GameView({
     [myAllSubmissions],
   );
 
+  if (game.phase === "finished" && !game.rankRevealDone) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/dog.png" alt="탐정 강아지" className="h-28 w-28 motion-safe:animate-bounce" />
+        <h1 className="text-3xl">앞 화면을 봐 주세요</h1>
+        <p className="text-[var(--color-muted)]">곧 이번 시간 순위가 공개돼요!</p>
+      </main>
+    );
+  }
+
   if (game.phase === "finished") {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl">게임이 끝났어요!</h1>
+          <MyRank studentId={studentId} />
           <p className="font-[family-name:var(--font-accent)] text-2xl text-[var(--color-primary-ink)]">
             누적 점수 {cumulativeScore}점
           </p>
@@ -75,9 +88,6 @@ export default function GameView({
           </ul>
         </div>
 
-        <p className="text-center text-sm text-[var(--color-muted)]">
-          교사 화면에서 전체 순위를 확인해주세요.
-        </p>
       </main>
     );
   }
@@ -163,5 +173,22 @@ export default function GameView({
       }
       footer={<p className="text-sm text-[var(--color-muted)]">누적 점수 {cumulativeScore}점</p>}
     />
+  );
+}
+
+/** 전체 순위표가 공개된 뒤 내 순위만 보여줌 (다른 학생의 이름·점수는 표시하지 않음) */
+function MyRank({ studentId }: { studentId: string }) {
+  const [all, setAll] = useState<Submission[]>([]);
+  useEffect(() => subscribeAllSubmissions(setAll), []);
+  const me = useMemo(
+    () => buildLeaderboard(all).find((e) => e.studentId === studentId),
+    [all, studentId],
+  );
+  if (!me) return null;
+  return (
+    <p className="my-2 font-[family-name:var(--font-accent)] text-5xl text-[var(--foreground)]">
+      {me.rank === 1 ? "👑 " : ""}
+      {me.rank}위
+    </p>
   );
 }

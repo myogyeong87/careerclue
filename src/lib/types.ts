@@ -39,6 +39,10 @@ export interface GameState {
   countdownEndsAt: number | null;
   /** 연습 라운드 진행 중이면 그 상태. 실제 게임 진행 상태와 섞이지 않게 별도 필드로 둠 */
   practice: PracticeState | null;
+  /** 종료 화면 TOP 5 연출 단계: 0 = 타이틀, n = 아래 순위부터 n개 순위 공개 */
+  rankRevealStep: number;
+  /** TOP 5 연출이 끝나고 전체 순위표가 공개됐는지 (학생 화면은 이때 내 순위를 보여줌) */
+  rankRevealDone: boolean;
 }
 
 export interface SubmissionAttempt {
@@ -76,4 +80,6 @@ export const EMPTY_GAME_STATE: GameState = {
   resumePhase: null,
   countdownEndsAt: null,
   practice: null,
+  rankRevealStep: 0,
+  rankRevealDone: false,
 };

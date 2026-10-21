@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { subscribeGameState } from "@/lib/game";
+import { useEffect, useMemo, useState } from "react";
+import { finishRankReveal, setRankRevealStep, subscribeGameState } from "@/lib/game";
 import { subscribeAllSubmissions } from "@/lib/submissions";
-import { playRevealChime } from "@/lib/sound";
+import { buildLeaderboard, topRankGroups } from "@/lib/ranking";
+import { playDrumroll, playFanfare, playRankPop, playRevealChime } from "@/lib/sound";
 import { tfs } from "@/lib/teacherFontSize";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
+import RankReveal from "./RankReveal";
 
 type RoundTag = "speed" | "allCorrect" | "struggle" | "comeback";
 
@@ -78,134 +80,99 @@ function buildRounds(game: GameState, submissions: Submission[]): RoundSummary[]
 
 const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default function ResultsTab() {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [expandedRound, setExpandedRound] = useState<string | null>(null);
-  const [revealedCount, setRevealedCount] = useState(0);
-  const chimePlayed = useRef(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => subscribeGameState(setGame), []);
   useEffect(() => subscribeAllSubmissions(setSubmissions), []);
 
-  useEffect(() => {
-    if (!chimePlayed.current && submissions.length > 0) {
-      chimePlayed.current = true;
-      playRevealChime();
-    }
-  }, [submissions.length]);
-
-  const leaderboard = useMemo(() => {
-    const totals = new Map<string, { studentName: string; score: number }>();
-    submissions.forEach((s) => {
-      const entry = totals.get(s.studentId) ?? { studentName: s.studentName, score: 0 };
-      entry.score += s.score;
-      entry.studentName = s.studentName;
-      totals.set(s.studentId, entry);
-    });
-    return Array.from(totals.entries())
-      .map(([studentId, v]) => ({ studentId, ...v }))
-      .sort((a, b) => b.score - a.score);
-  }, [submissions]);
-
+  const leaderboard = useMemo(() => buildLeaderboard(submissions), [submissions]);
+  const groups = useMemo(() => topRankGroups(leaderboard), [leaderboard]);
+  // 5위 → 1위 순으로 공개
+  const revealOrder = useMemo(() => [...groups].reverse(), [groups]);
   const rounds = useMemo(() => buildRounds(game, submissions), [game, submissions]);
 
-  const topCount = Math.min(5, leaderboard.length);
-  const topEntries = leaderboard.slice(0, topCount);
-  const restEntries = leaderboard.slice(topCount);
-  const allTopRevealed = revealedCount >= topCount;
-  const nextPlace = topCount - revealedCount;
+  const step = Math.min(game.rankRevealStep, revealOrder.length);
 
-  const handleRevealNext = () => {
-    if (allTopRevealed) return;
-    setRevealedCount((c) => c + 1);
-    playRevealChime();
+  const handleNext = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (step < revealOrder.length) {
+        if (revealOrder[step].rank === 1) {
+          await sleep(playDrumroll() * 1000);
+          playFanfare();
+        } else {
+          playRankPop();
+        }
+        await setRankRevealStep(step + 1);
+      } else {
+        playRevealChime();
+        await finishRankReveal();
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (submissions.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-muted)]">
+      <p className="text-xl text-[var(--color-muted)]">
         아직 채점된 제출이 없어요. 라운드를 진행하고 정답을 공개하면 이곳에
         결과가 표시돼요.
       </p>
     );
   }
 
+  if (!game.rankRevealDone) {
+    return (
+      <RankReveal
+        revealed={revealOrder.slice(0, step)}
+        total={revealOrder.length}
+        busy={busy}
+        nextLabel={
+          step >= revealOrder.length
+            ? "전체 순위표 보기"
+            : revealOrder[step].rank === 1
+              ? "🥁 1위 공개"
+              : "다음 순위 ▶"
+        }
+        onNext={handleNext}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-10">
-      <section style={{ fontSize: tfs() }}>
-        <h2 className="mb-3 text-[1.25em]">순위표</h2>
-
-        {restEntries.length > 0 && (
-          <ol className="mb-4 flex flex-col gap-1.5">
-            {restEntries.map((entry, i) => (
-              <li
-                key={entry.studentId}
-                className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2"
-              >
-                <span className="min-w-[2.5em] text-[var(--color-muted)]">
-                  {topCount + i + 1}위
-                </span>
-                <span className="flex-1">{entry.studentName}</span>
-                <span className="text-[var(--color-muted)]">{entry.score}점</span>
-              </li>
-            ))}
-          </ol>
-        )}
-
-        <div className="flex flex-col gap-2">
-          {topEntries.map((entry, idx) => {
-            const place = idx + 1;
-            const revealed = revealedCount >= topCount - place + 1;
-            const isTop3 = place <= 3;
-
-            if (!revealed) {
-              return (
-                <div
-                  key={entry.studentId}
-                  className="flex items-center gap-3 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)]/30 bg-[var(--color-background)] px-4 py-3 text-[var(--foreground)]/40"
-                >
-                  <span className="min-w-[2.5em] font-[family-name:var(--font-accent)] text-[1.1em]">
-                    {place}위
-                  </span>
-                  <span className="flex-1 font-semibold">???</span>
-                  <span>??점</span>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                key={entry.studentId}
-                className={`flex items-center gap-3 rounded-[var(--radius-card)] px-4 py-4 shadow-[var(--shadow-card)] ${
-                  isTop3
-                    ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
-                    : "bg-[var(--color-accent)]/25 text-[var(--foreground)]"
-                }`}
-              >
-                <span className="min-w-[2.5em] text-[1.4em]">{MEDAL[place] ?? `${place}위`}</span>
-                <span className="flex-1 text-lg font-semibold">{entry.studentName}</span>
-                <span className="font-[family-name:var(--font-accent)] text-[1.2em]">
-                  {entry.score}점
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {!allTopRevealed && (
-          <button
-            type="button"
-            onClick={handleRevealNext}
-            className="mt-4 w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)]"
-          >
-            🎉 {nextPlace}위 공개하기
-          </button>
-        )}
+    <div className="flex flex-col gap-12">
+      <section style={{ fontSize: tfs(1.2) }}>
+        <h2 className="mb-[0.6em] text-[1.4em]">🏆 전체 순위</h2>
+        <ol className="gap-[0.6em] lg:columns-2">
+          {leaderboard.map((entry) => (
+            <li
+              key={entry.studentId}
+              className={`mb-[0.4em] flex break-inside-avoid items-center gap-[0.6em] rounded-[var(--radius-card)] border-2 px-[0.8em] py-[0.35em] ${
+                entry.rank <= 3
+                  ? "border-[var(--color-primary)] bg-[var(--color-primary)]/15"
+                  : "border-[var(--color-border)] bg-[var(--color-surface)]"
+              }`}
+            >
+              <span className="min-w-[2.6em] font-[family-name:var(--font-accent)]">
+                {MEDAL[entry.rank] ?? `${entry.rank}위`}
+              </span>
+              <span className="flex-1 truncate font-semibold">{entry.studentName}</span>
+              <span className="font-[family-name:var(--font-accent)]">{entry.score}점</span>
+            </li>
+          ))}
+        </ol>
       </section>
 
-      <section>
-        <h2 className="mb-3 text-xl">오답노트</h2>
+      <section style={{ fontSize: tfs() }}>
+        <h2 className="mb-3 text-[1.4em]">오답노트</h2>
         <div className="flex flex-col gap-3">
           {rounds.map((round) => (
             <div
@@ -224,23 +191,23 @@ export default function ResultsTab() {
                   {round.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold"
+                      className="rounded-full bg-[var(--color-soft)] px-2 py-0.5 text-[0.8em] font-semibold"
                     >
                       {TAG_META[tag].emoji} {TAG_META[tag].label}
                     </span>
                   ))}
                 </span>
-                <span className="ml-auto text-sm text-[var(--color-muted)]">
+                <span className="ml-auto text-[0.8em] text-[var(--color-muted)]">
                   {expandedRound === round.roundId ? "접기 ▲" : "펼치기 ▼"}
                 </span>
               </button>
 
               {expandedRound === round.roundId && (
                 <div className="flex flex-col gap-3 border-t border-[var(--color-border)] px-4 py-4">
-                  <p className="font-[family-name:var(--font-heading)] text-lg">
+                  <p className="font-[family-name:var(--font-heading)] text-[1.1em]">
                     정답: {round.title}
                   </p>
-                  <ol className="flex flex-col gap-1 text-sm">
+                  <ol className="flex flex-col gap-1 text-[0.8em]">
                     {round.hints.map((hint, i) => (
                       <li key={i}>
                         <span className="mr-1 text-[var(--color-primary-ink)]">
@@ -251,8 +218,8 @@ export default function ResultsTab() {
                     ))}
                   </ol>
                   <div>
-                    <p className="mb-1 text-sm font-semibold">반 정답 분포</p>
-                    <ul className="flex flex-wrap gap-2 text-sm">
+                    <p className="mb-1 text-[0.8em] font-semibold">반 정답 분포</p>
+                    <ul className="flex flex-wrap gap-2 text-[0.8em]">
                       {[1, 2, 3, 4, 5].map((stage) => (
                         <li
                           key={stage}

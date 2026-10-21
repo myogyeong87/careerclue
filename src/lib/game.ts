@@ -37,6 +37,8 @@ export function subscribeGameState(
         resumePhase: data.resumePhase ?? null,
         countdownEndsAt: data.countdownEndsAt ?? null,
         practice: data.practice ?? null,
+        rankRevealStep: data.rankRevealStep ?? 0,
+        rankRevealDone: data.rankRevealDone ?? false,
       });
     },
     (err) => onError?.(err),
@@ -169,7 +171,12 @@ export async function revealAnswer(game: GameState): Promise<void> {
 export async function advanceRound(game: GameState): Promise<void> {
   const nextIndex = game.currentIndex + 1;
   if (nextIndex >= game.jobs.length) {
-    await updateDoc(GAME_DOC, { phase: "finished", resumePhase: "revealed" });
+    await updateDoc(GAME_DOC, {
+      phase: "finished",
+      resumePhase: "revealed",
+      rankRevealStep: 0,
+      rankRevealDone: false,
+    });
     return;
   }
   await updateDoc(GAME_DOC, {
@@ -201,7 +208,22 @@ export async function resetToLobby(): Promise<void> {
 /** 남은 문제와 상관없이 지금 바로 채점 화면(결과)으로 전환. 진행 상태는 그대로 보존해 나중에 되돌아갈 수 있음 */
 export async function endGameNow(game: GameState): Promise<void> {
   const resumePhase = game.phase === "revealed" ? "revealed" : "active";
-  await updateDoc(GAME_DOC, { phase: "finished", resumePhase });
+  await updateDoc(GAME_DOC, {
+    phase: "finished",
+    resumePhase,
+    rankRevealStep: 0,
+    rankRevealDone: false,
+  });
+}
+
+/** 종료 화면 TOP 5 연출을 한 단계 진행 (학생 화면과 동기화) */
+export async function setRankRevealStep(step: number): Promise<void> {
+  await updateDoc(GAME_DOC, { rankRevealStep: step });
+}
+
+/** TOP 5 연출 종료 → 전체 순위표 공개 */
+export async function finishRankReveal(): Promise<void> {
+  await updateDoc(GAME_DOC, { rankRevealDone: true });
 }
 
 /** 결과 화면에서 진행하던 게임 화면으로 복귀 (초기화 없이) */

@@ -21,7 +21,6 @@ export default function TeacherPage() {
   useEffect(() => subscribeGameState(setGame), []);
   useCountdownAutoStart(game);
 
-  const isGameFlow = !showSettings && game.phase !== "finished";
   const hasStarted = game.currentIndex > -1;
   const finished = game.phase === "finished";
 
@@ -74,7 +73,7 @@ export default function TeacherPage() {
   return (
     <main
       className={`mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 ${
-        isGameFlow ? "max-w-none px-8" : "max-w-5xl"
+        showSettings ? "max-w-5xl" : "max-w-none px-8"
       }`}
       style={{ "--tfs": `${fontSize}px` } as React.CSSProperties}
     >
