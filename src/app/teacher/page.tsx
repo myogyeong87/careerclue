@@ -9,9 +9,18 @@ import GameFlowView from "./_components/GameFlowView";
 import ResultsTab from "./_components/ResultsTab";
 import SettingsPanel from "./_components/SettingsPanel";
 import FontSizeControls from "./_components/FontSizeControls";
+import PinGate from "./_components/PinGate";
 import { useTeacherFontSize } from "@/lib/teacherFontSize";
 
 export default function TeacherPage() {
+  return (
+    <PinGate>
+      <TeacherHome />
+    </PinGate>
+  );
+}
+
+function TeacherHome() {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [showSettings, setShowSettings] = useState(false);
   const [showQr, setShowQr] = useState(false);

@@ -9,6 +9,7 @@ service cloud.firestore {
     match /games/{gameId} {
       allow read, write: if true;
 
+      // games/current/submissions: 실제 게임, games/practice/submissions: 연습 라운드
       match /submissions/{submissionId} {
         allow read, write: if true;
       }
@@ -18,6 +19,10 @@ service cloud.firestore {
       }
     }
     match /roster/{studentId} {
+      allow read, write: if true;
+    }
+    // 교사 PIN 해시 (config/teacherPin). 원문은 저장하지 않음
+    match /config/{docId} {
       allow read, write: if true;
     }
   }
