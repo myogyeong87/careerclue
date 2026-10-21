@@ -39,6 +39,7 @@ export function subscribeGameState(
         practice: data.practice ?? null,
         rankRevealStep: data.rankRevealStep ?? 0,
         rankRevealDone: data.rankRevealDone ?? false,
+        roundStartTimes: data.roundStartTimes ?? {},
       });
     },
     (err) => onError?.(err),
@@ -101,6 +102,7 @@ export async function applySetToGame(set: QuestionSet, count: number | null = nu
     roundId: null,
     resumePhase: null,
     countdownEndsAt: null,
+    roundStartTimes: {},
   });
 }
 
@@ -121,6 +123,7 @@ export async function applyRandomPoolToGame(pool: Job[], count: number | null): 
     roundId: null,
     resumePhase: null,
     countdownEndsAt: null,
+    roundStartTimes: {},
   });
 }
 
@@ -134,14 +137,16 @@ export async function beginCountdown(durationMs: number): Promise<void> {
 
 /** 첫 라운드 시작 (currentIndex -1 -> 0) */
 export async function startFirstRound(): Promise<void> {
+  const roundId = newRoundId();
   await updateDoc(GAME_DOC, {
     currentIndex: 0,
     hintsOpen: 1,
     initialsRevealed: false,
     charCountRevealed: false,
     phase: "active",
-    roundId: newRoundId(),
+    roundId,
     countdownEndsAt: null,
+    roundStartTimes: { [roundId]: Date.now() },
   });
 }
 
@@ -179,13 +184,15 @@ export async function advanceRound(game: GameState): Promise<void> {
     });
     return;
   }
+  const roundId = newRoundId();
   await updateDoc(GAME_DOC, {
     currentIndex: nextIndex,
     hintsOpen: 1,
     initialsRevealed: false,
     charCountRevealed: false,
     phase: "active",
-    roundId: newRoundId(),
+    roundId,
+    [`roundStartTimes.${roundId}`]: Date.now(),
   });
 }
 

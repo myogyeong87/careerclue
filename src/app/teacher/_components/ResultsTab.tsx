@@ -8,7 +8,9 @@ import { playDrumroll, playFanfare, playRankPop, playRevealChime } from "@/lib/s
 import { tfs } from "@/lib/teacherFontSize";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import { judgeAnswer } from "@/lib/answerJudge";
+import { buildAwards } from "@/lib/awards";
 import RankReveal from "./RankReveal";
+import AwardStage from "./AwardStage";
 
 /** 정답률(정답자 수 / 이번 게임 참여 학생 수)로 나눈 오답노트 분류. 어려운 문제부터 */
 type Category = "allWrong" | "under50" | "over50" | "allCorrect";
@@ -110,7 +112,12 @@ export default function ResultsTab() {
   const revealOrder = useMemo(() => [...groups].reverse(), [groups]);
   const rounds = useMemo(() => buildRounds(game, submissions), [game, submissions]);
 
-  const step = Math.min(game.rankRevealStep, revealOrder.length);
+  const awards = useMemo(() => buildAwards(game, submissions), [game, submissions]);
+
+  // 단계: 0 = 타이틀, 1..순위 수 = 순위 공개, 그 뒤 1장씩 특별상
+  const lastStep = revealOrder.length + awards.length;
+  const step = Math.min(game.rankRevealStep, lastStep);
+  const awardIndex = step - revealOrder.length - 1;
 
   const handleNext = async () => {
     if (busy) return;
@@ -123,6 +130,9 @@ export default function ResultsTab() {
         } else {
           playRankPop();
         }
+        await setRankRevealStep(step + 1);
+      } else if (step < lastStep) {
+        playRevealChime();
         await setRankRevealStep(step + 1);
       } else {
         playRevealChime();
@@ -142,6 +152,20 @@ export default function ResultsTab() {
     );
   }
 
+  if (!game.rankRevealDone && awardIndex >= 0) {
+    return (
+      <AwardStage
+        award={awards[awardIndex]}
+        jobs={game.jobs}
+        index={awardIndex}
+        total={awards.length}
+        busy={busy}
+        nextLabel={step >= lastStep ? "전체 순위표 보기" : "다음 상 ▶"}
+        onNext={handleNext}
+      />
+    );
+  }
+
   if (!game.rankRevealDone) {
     return (
       <RankReveal
@@ -150,7 +174,9 @@ export default function ResultsTab() {
         busy={busy}
         nextLabel={
           step >= revealOrder.length
-            ? "전체 순위표 보기"
+            ? awards.length > 0
+              ? "🏅 특별상 시상식 ▶"
+              : "전체 순위표 보기"
             : revealOrder[step].rank === 1
               ? "🥁 1위 공개"
               : "다음 순위 ▶"

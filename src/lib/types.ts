@@ -43,6 +43,8 @@ export interface GameState {
   rankRevealStep: number;
   /** TOP 5 연출이 끝나고 전체 순위표가 공개됐는지 (학생 화면은 이때 내 순위를 보여줌) */
   rankRevealDone: boolean;
+  /** 라운드별 시작 시각(ms epoch). 특별상 "번개 탐정"의 정답까지 걸린 시간 계산용 */
+  roundStartTimes: Record<string, number>;
 }
 
 export interface SubmissionAttempt {
@@ -82,4 +84,5 @@ export const EMPTY_GAME_STATE: GameState = {
   practice: null,
   rankRevealStep: 0,
   rankRevealDone: false,
+  roundStartTimes: {},
 };
