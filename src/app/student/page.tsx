@@ -67,7 +67,7 @@ export default function StudentPage() {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
         <h1 className="text-xl">접속이 초기화됐어요</h1>
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-sm text-[var(--color-muted)]">
           선생님이 접속을 초기화했어요. 학번과 이름을 다시 확인하고 접속해주세요.
         </p>
         <button
@@ -76,7 +76,7 @@ export default function StudentPage() {
             setKicked(false);
             setJoined(null);
           }}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-white"
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-[var(--color-on-primary)]"
         >
           다시 접속하기
         </button>
@@ -94,13 +94,13 @@ export default function StudentPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
         <h1 className="text-2xl">커리어탐정</h1>
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-sm text-[var(--color-muted)]">
           학번과 이름을 입력해주세요.
         </p>
       </div>
       <form
         onSubmit={handleSubmit}
-        className="flex w-full max-w-xs flex-col gap-3 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
+        className="flex w-full max-w-xs flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
       >
         <label className="flex flex-col gap-1 text-sm">
           학번
@@ -123,11 +123,11 @@ export default function StudentPage() {
             placeholder="홍길동"
           />
         </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+          className="mt-2 rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-3 font-semibold text-[var(--color-on-primary)] transition hover:opacity-90 disabled:opacity-60"
         >
           {submitting ? "확인 중..." : "입장하기"}
         </button>

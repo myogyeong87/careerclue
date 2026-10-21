@@ -123,7 +123,7 @@ export default function ResultsTab() {
 
   if (submissions.length === 0) {
     return (
-      <p className="text-sm text-[var(--foreground)]/60">
+      <p className="text-sm text-[var(--color-muted)]">
         아직 채점된 제출이 없어요. 라운드를 진행하고 정답을 공개하면 이곳에
         결과가 표시돼요.
       </p>
@@ -140,13 +140,13 @@ export default function ResultsTab() {
             {restEntries.map((entry, i) => (
               <li
                 key={entry.studentId}
-                className="flex items-center gap-3 rounded-lg bg-[var(--color-surface)] px-4 py-2 text-sm"
+                className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm"
               >
-                <span className="w-10 text-[var(--foreground)]/60">
+                <span className="w-10 text-[var(--color-muted)]">
                   {topCount + i + 1}위
                 </span>
                 <span className="flex-1">{entry.studentName}</span>
-                <span className="text-[var(--foreground)]/70">{entry.score}점</span>
+                <span className="text-[var(--color-muted)]">{entry.score}점</span>
               </li>
             ))}
           </ol>
@@ -178,7 +178,7 @@ export default function ResultsTab() {
                 key={entry.studentId}
                 className={`flex items-center gap-3 rounded-[var(--radius-card)] px-4 py-4 shadow-[var(--shadow-card)] ${
                   isTop3
-                    ? "bg-[var(--color-primary)] text-white"
+                    ? "bg-[var(--color-primary)] text-[var(--color-on-primary)]"
                     : "bg-[var(--color-accent)]/25 text-[var(--foreground)]"
                 }`}
               >
@@ -196,7 +196,7 @@ export default function ResultsTab() {
           <button
             type="button"
             onClick={handleRevealNext}
-            className="mt-4 w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white"
+            className="mt-4 w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)]"
           >
             🎉 {nextPlace}위 공개하기
           </button>
@@ -209,7 +209,7 @@ export default function ResultsTab() {
           {rounds.map((round) => (
             <div
               key={round.roundId}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
             >
               <button
                 type="button"
@@ -229,20 +229,20 @@ export default function ResultsTab() {
                     </span>
                   ))}
                 </span>
-                <span className="ml-auto text-sm text-[var(--foreground)]/60">
+                <span className="ml-auto text-sm text-[var(--color-muted)]">
                   {expandedRound === round.roundId ? "접기 ▲" : "펼치기 ▼"}
                 </span>
               </button>
 
               {expandedRound === round.roundId && (
-                <div className="flex flex-col gap-3 border-t border-white px-4 py-4">
+                <div className="flex flex-col gap-3 border-t border-[var(--color-border)] px-4 py-4">
                   <p className="font-[family-name:var(--font-heading)] text-lg">
                     정답: {round.title}
                   </p>
                   <ol className="flex flex-col gap-1 text-sm">
                     {round.hints.map((hint, i) => (
                       <li key={i}>
-                        <span className="mr-1 text-[var(--color-primary)]">
+                        <span className="mr-1 text-[var(--color-primary-ink)]">
                           {i + 1}.
                         </span>
                         {hint}
@@ -255,7 +255,7 @@ export default function ResultsTab() {
                       {[1, 2, 3, 4, 5].map((stage) => (
                         <li
                           key={stage}
-                          className="rounded-lg bg-white px-2 py-1"
+                          className="rounded-lg border border-[var(--color-border)] bg-white px-2 py-1"
                         >
                           {stage}번째 힌트: {round.distribution[stage] ?? 0}명
                         </li>

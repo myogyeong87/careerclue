@@ -34,13 +34,13 @@ export default function QrCode({
         />
       ) : (
         <div
-          className={`flex items-center justify-center text-sm text-[var(--foreground)]/50 ${box}`}
+          className={`flex items-center justify-center text-sm text-[var(--color-muted)] ${box}`}
         >
           QR 코드 생성 중...
         </div>
       )}
       <p
-        className={`whitespace-nowrap text-center text-[10px] text-[var(--foreground)]/70 ${
+        className={`whitespace-nowrap text-center text-[10px] text-[var(--color-muted)] ${
           size === "sm" ? "max-w-32" : "max-w-56"
         }`}
       >

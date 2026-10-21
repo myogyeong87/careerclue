@@ -95,7 +95,7 @@ export default function SetEditor({
       <button
         type="button"
         onClick={() => onBack(dirty)}
-        className="w-fit text-sm text-[var(--foreground)]/60 hover:text-[var(--foreground)]"
+        className="w-fit text-sm text-[var(--color-muted)] hover:text-[var(--foreground)]"
       >
         ← 목록으로
       </button>
@@ -115,21 +115,21 @@ export default function SetEditor({
           type="button"
           disabled={!dirty || saving}
           onClick={handleSave}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
         >
           {saving ? "저장 중..." : dirty ? "저장하기" : "저장됨"}
         </button>
         <button
           type="button"
           onClick={addJob}
-          className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold"
+          className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold"
         >
           문제 추가
         </button>
       </div>
 
       {draft.jobs.length === 0 && (
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-[var(--color-muted)]">
           아직 문제가 없어요. &quot;문제 추가&quot;로 첫 문제를 만들어보세요.
         </p>
       )}
@@ -147,7 +147,7 @@ export default function SetEditor({
                 if (dragJobIndex !== null) moveJob(dragJobIndex, jobIndex);
                 setDragJobIndex(null);
               }}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
             >
               <div className="flex cursor-move items-center gap-2 px-4 py-3">
                 <span className="text-[var(--foreground)]/40" title="드래그로 순서 변경">
@@ -161,24 +161,24 @@ export default function SetEditor({
                   <span className="font-semibold">
                     {jobIndex + 1}. {job.title || "(제목 없음)"}
                   </span>
-                  <span className="font-mono text-sm tracking-widest text-[var(--foreground)]/50">
+                  <span className="font-mono text-sm tracking-widest text-[var(--color-muted)]">
                     {charCountPreview(job.title)}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => removeJob(jobIndex)}
-                  className="text-sm text-red-600"
+                  className="text-sm text-[var(--color-danger)]"
                 >
                   삭제
                 </button>
-                <span className="text-sm text-[var(--foreground)]/50">
+                <span className="text-sm text-[var(--color-muted)]">
                   {isExpanded ? "▲" : "▼"}
                 </span>
               </div>
 
               {isExpanded && (
-                <div className="flex flex-col gap-3 border-t border-white px-4 py-4">
+                <div className="flex flex-col gap-3 border-t border-[var(--color-border)] px-4 py-4">
                   <label className="flex flex-col gap-1 text-sm">
                     직업명
                     <input
@@ -219,7 +219,7 @@ export default function SetEditor({
                         className="flex cursor-move items-start gap-2"
                       >
                         <span className="mt-2 text-[var(--foreground)]/40">⠿</span>
-                        <span className="mt-2 text-sm text-[var(--color-primary)]">
+                        <span className="mt-2 text-sm text-[var(--color-primary-ink)]">
                           {hintIndex + 1}
                         </span>
                         <textarea

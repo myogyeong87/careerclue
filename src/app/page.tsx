@@ -32,7 +32,7 @@ export default function RoleSelectPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/dog.png" alt="탐정 강아지" className="h-32 w-32" />
         <h1 className="text-3xl">커리어탐정</h1>
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-sm text-[var(--color-muted)]">
           단서를 모아 직업을 추리하는 진로 수업 퀴즈
         </p>
       </div>
@@ -40,14 +40,14 @@ export default function RoleSelectPage() {
         <button
           type="button"
           onClick={() => selectRole("teacher")}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-white shadow-[var(--shadow-card)] transition hover:opacity-90"
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-[var(--color-on-primary)] shadow-[var(--shadow-card)] transition hover:opacity-90"
         >
           교사로 시작
         </button>
         <button
           type="button"
           onClick={() => selectRole("student")}
-          className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-6 py-4 text-lg font-semibold text-[var(--color-foreground)] shadow-[var(--shadow-card)] transition hover:opacity-90"
+          className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4 text-lg font-semibold text-[var(--color-foreground)] shadow-[var(--shadow-card)] transition hover:opacity-90"
         >
           학생으로 참여
         </button>

@@ -197,7 +197,7 @@ export default function QuestionSetsTab() {
     return editingSet ? (
       <SetEditor key={editingSet.id} initial={editingSet} onBack={handleBackFromEditor} />
     ) : (
-      <p className="text-sm text-[var(--foreground)]/60">불러오는 중...</p>
+      <p className="text-sm text-[var(--color-muted)]">불러오는 중...</p>
     );
   }
 
@@ -207,14 +207,14 @@ export default function QuestionSetsTab() {
         <button
           type="button"
           onClick={handleCreateNew}
-          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-on-primary)] hover:opacity-90"
         >
           새 세트 만들기
         </button>
         <button
           type="button"
           onClick={() => setShowImport((v) => !v)}
-          className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold hover:opacity-90"
+          className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold hover:opacity-90"
         >
           JSON으로 가져오기
         </button>
@@ -227,11 +227,11 @@ export default function QuestionSetsTab() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
+      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <h3 className="font-[family-name:var(--font-heading)] text-sm font-semibold">
           전체 세트 통합 랜덤 적용
         </h3>
-        <p className="text-xs text-[var(--foreground)]/60">
+        <p className="text-xs text-[var(--color-muted)]">
           모든 세트의 문제를 합쳐(같은 직업은 하나만) 문제 수만큼 무작위로 뽑아 적용해요. 현재
           합친 문제 수: {uniquePool.length}개
         </p>
@@ -251,16 +251,16 @@ export default function QuestionSetsTab() {
             type="button"
             disabled={poolBusy}
             onClick={handlePoolApply}
-            className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-[var(--color-on-primary)] disabled:opacity-60"
           >
             통합 랜덤 적용
           </button>
         </div>
-        {poolMessage && <p className="text-sm text-[var(--foreground)]/70">{poolMessage}</p>}
+        {poolMessage && <p className="text-sm text-[var(--color-muted)]">{poolMessage}</p>}
       </div>
 
       {showImport && (
-        <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
+        <div className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
           <textarea
             value={importText}
             onChange={(e) => setImportText(e.target.value)}
@@ -269,7 +269,7 @@ export default function QuestionSetsTab() {
             className="w-full rounded-lg border border-[var(--color-primary)]/30 bg-white p-3 font-mono text-xs outline-none focus:border-[var(--color-primary)]"
           />
           {importErrors.length > 0 && (
-            <ul className="list-inside list-disc text-sm text-red-600">
+            <ul className="list-inside list-disc text-sm text-[var(--color-danger)]">
               {importErrors.map((err) => (
                 <li key={err}>{err}</li>
               ))}
@@ -279,7 +279,7 @@ export default function QuestionSetsTab() {
             <button
               type="button"
               onClick={handleImportSubmit}
-              className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white"
+              className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-on-primary)]"
             >
               가져오기
             </button>
@@ -297,7 +297,7 @@ export default function QuestionSetsTab() {
         </div>
       )}
 
-      {loadError && <p className="text-sm text-red-600">{loadError}</p>}
+      {loadError && <p className="text-sm text-[var(--color-danger)]">{loadError}</p>}
 
       <div
         className="grid gap-4"
@@ -308,19 +308,19 @@ export default function QuestionSetsTab() {
           return (
             <div
               key={set.id}
-              className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]"
+              className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]"
             >
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold">
                   {set.name}
                 </h3>
                 {isActive && (
-                  <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-2 py-0.5 text-xs font-semibold text-white">
+                  <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-2 py-0.5 text-xs font-semibold text-[var(--color-on-primary)]">
                     적용됨
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[var(--foreground)]/70">
+              <p className="text-sm text-[var(--color-muted)]">
                 문제 {set.jobs.length}개
               </p>
               <div className="mt-2 flex flex-wrap gap-2 text-sm">
@@ -328,7 +328,7 @@ export default function QuestionSetsTab() {
                   type="button"
                   disabled={busyId === set.id}
                   onClick={() => handleApply(set)}
-                  className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 font-semibold text-white disabled:opacity-60"
+                  className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 font-semibold text-[var(--color-on-primary)] disabled:opacity-60"
                 >
                   적용하기
                 </button>
@@ -347,14 +347,14 @@ export default function QuestionSetsTab() {
                   type="button"
                   disabled={busyId === set.id}
                   onClick={() => handleRandomApply(set)}
-                  className="rounded-lg bg-white px-3 py-1.5 font-semibold text-[var(--color-primary)] disabled:opacity-60"
+                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 font-semibold text-[var(--color-primary-ink)] disabled:opacity-60"
                 >
                   세트 내 랜덤 적용
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditingId(set.id)}
-                  className="rounded-lg bg-white px-3 py-1.5 font-semibold"
+                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 font-semibold"
                 >
                   편집
                 </button>
@@ -362,14 +362,14 @@ export default function QuestionSetsTab() {
                   type="button"
                   disabled={busyId === set.id}
                   onClick={() => handleDuplicate(set)}
-                  className="rounded-lg bg-white px-3 py-1.5 disabled:opacity-60"
+                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 disabled:opacity-60"
                 >
                   복제해서 수정
                 </button>
                 <button
                   type="button"
                   onClick={() => handleExport(set)}
-                  className="rounded-lg bg-white px-3 py-1.5"
+                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5"
                 >
                   내보내기
                 </button>
@@ -377,13 +377,13 @@ export default function QuestionSetsTab() {
                   type="button"
                   disabled={busyId === set.id}
                   onClick={() => handleDelete(set)}
-                  className="rounded-lg bg-white px-3 py-1.5 text-red-600 disabled:opacity-60"
+                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[var(--color-danger)] disabled:opacity-60"
                 >
                   삭제
                 </button>
               </div>
               {randomMessages[set.id] && (
-                <p className="text-sm text-[var(--foreground)]/70">{randomMessages[set.id]}</p>
+                <p className="text-sm text-[var(--color-muted)]">{randomMessages[set.id]}</p>
               )}
             </div>
           );
@@ -391,7 +391,7 @@ export default function QuestionSetsTab() {
       </div>
 
       {sets.length === 0 && !loadError && (
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-[var(--color-muted)]">
           저장된 문제 세트가 없어요. 위 버튼으로 세트를 만들어보세요.
         </p>
       )}

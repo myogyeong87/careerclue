@@ -19,7 +19,7 @@ export default function QrModal({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-white"
+        className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-[var(--color-on-primary)]"
       >
         닫기
       </button>

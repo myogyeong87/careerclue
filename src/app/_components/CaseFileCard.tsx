@@ -7,9 +7,9 @@ export default function CaseFileCard({
 }) {
   return (
     <div
-      className={`w-full max-w-lg rounded-[var(--radius-card)] border-4 border-[var(--color-primary)] bg-[var(--color-surface)] px-8 py-8 shadow-[var(--shadow-card)] ${className}`}
+      className={`w-full rounded-[var(--radius-card)] border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] ${className}`}
     >
-      <div className="rounded-lg border-2 border-dashed border-[var(--color-primary)]/40 px-6 py-6">
+      <div className="h-full rounded-[calc(var(--radius-card)-6px)] border-2 border-dashed border-[var(--color-primary)]/35 px-6 py-6">
         {children}
       </div>
     </div>

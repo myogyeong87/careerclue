@@ -39,7 +39,7 @@ export default function ClueBoard({
     <div className={`flex flex-col ${large ? "flex-1 gap-4" : "gap-2"}`}>
       {revealed && answer && (
         <div
-          className={`flex items-center gap-3 rounded-[var(--radius-card)] bg-[var(--color-primary)] text-white shadow-[var(--shadow-card)] ${
+          className={`flex items-center gap-3 rounded-[var(--radius-card)] bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] ${
             large ? "flex-1 px-10 py-6" : "px-4 py-3"
           }`}
         >
@@ -71,7 +71,7 @@ export default function ClueBoard({
             }`}
           >
             <span
-              className={`shrink-0 font-[family-name:var(--font-accent)] text-[var(--color-primary)] ${
+              className={`shrink-0 font-[family-name:var(--font-accent)] text-[var(--color-primary-ink)] ${
                 large ? "text-3xl" : "text-sm"
               }`}
             >
@@ -118,14 +118,14 @@ export default function ClueBoard({
           }`}
         >
           <span
-            className={`shrink-0 rounded-full bg-[var(--color-primary)] font-[family-name:var(--font-accent)] text-white ${
+            className={`shrink-0 rounded-full bg-[var(--color-primary)] font-[family-name:var(--font-accent)] text-[var(--color-on-primary)] ${
               large ? "px-5 py-2 text-xl" : "px-3 py-1 text-sm"
             }`}
           >
             초성 힌트
           </span>
           <span
-            className={`font-[family-name:var(--font-accent)] tracking-[0.4em] text-[var(--color-primary)] ${
+            className={`font-[family-name:var(--font-accent)] tracking-[0.4em] text-[var(--color-primary-ink)] ${
               large ? "text-6xl" : "text-2xl"
             }`}
           >

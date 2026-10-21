@@ -32,7 +32,7 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold"
+          className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold"
         >
           게임 화면으로 돌아가기
         </button>
@@ -40,9 +40,9 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
 
       <QuestionSetsTab />
 
-      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4">
+      <div className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <h3 className="text-sm font-semibold">학생 등록 정보</h3>
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-sm text-[var(--color-muted)]">
           한 번 사용한 학번은 처음 등록한 이름으로 고정돼요(다른 이름으로는 재접속 불가).
           학번을 다시 자유롭게 쓸 수 있게 하려면 등록 정보를 초기화하세요.
         </p>
@@ -50,7 +50,7 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
           type="button"
           disabled={busy}
           onClick={handleClearRoster}
-          className="w-fit rounded-[var(--radius-card)] bg-white px-4 py-2 text-sm font-semibold text-red-600 disabled:opacity-50"
+          className="w-fit rounded-[var(--radius-card)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-danger)] disabled:opacity-50"
         >
           학생 등록 정보 초기화
         </button>

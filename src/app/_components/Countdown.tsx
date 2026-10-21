@@ -15,7 +15,7 @@ export default function Countdown({ endsAt }: { endsAt: number }) {
   }, [endsAt]);
 
   return (
-    <p className="font-[family-name:var(--font-accent)] text-7xl text-[var(--color-primary)]">
+    <p className="font-[family-name:var(--font-accent)] text-7xl text-[var(--color-primary-ink)]">
       {remaining > 0 ? remaining : "시작!"}
     </p>
   );

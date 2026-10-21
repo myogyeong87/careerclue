@@ -62,20 +62,20 @@ export default function GameView({
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl">게임이 끝났어요!</h1>
-          <p className="font-[family-name:var(--font-accent)] text-2xl text-[var(--color-primary)]">
+          <p className="font-[family-name:var(--font-accent)] text-2xl text-[var(--color-primary-ink)]">
             누적 점수 {cumulativeScore}점
           </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]/60">내 성적표</h2>
+          <h2 className="text-sm font-semibold text-[var(--color-muted)]">내 성적표</h2>
           <ul className="flex flex-col gap-1.5">
             {sortedMySubmissions.map((s) => {
               const submittedJob = game.jobs[s.jobIndex];
               return (
                 <li
                   key={s.id}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-surface)] px-4 py-3 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm"
                 >
                   <span className="font-semibold">
                     {submittedJob?.title ?? `문제 ${s.jobIndex + 1}`}
@@ -83,8 +83,8 @@ export default function GameView({
                   <span
                     className={
                       s.correct
-                        ? "font-semibold text-[var(--color-primary)]"
-                        : "font-semibold text-red-600"
+                        ? "font-semibold text-[var(--color-success-ink)]"
+                        : "font-semibold text-[var(--color-danger)]"
                     }
                   >
                     {s.correct ? `정답 (+${s.score}점)` : "오답"}
@@ -93,12 +93,12 @@ export default function GameView({
               );
             })}
             {sortedMySubmissions.length === 0 && (
-              <li className="text-sm text-[var(--foreground)]/60">제출한 문제가 없어요.</li>
+              <li className="text-sm text-[var(--color-muted)]">제출한 문제가 없어요.</li>
             )}
           </ul>
         </div>
 
-        <p className="text-center text-sm text-[var(--foreground)]/70">
+        <p className="text-center text-sm text-[var(--color-muted)]">
           교사 화면에서 전체 순위를 확인해주세요.
         </p>
       </main>
@@ -124,7 +124,7 @@ export default function GameView({
         <h1 className="text-2xl">
           {studentName}({studentId})님, 안녕하세요!
         </h1>
-        <p className="text-sm text-[var(--foreground)]/70">
+        <p className="text-sm text-[var(--color-muted)]">
           게임이 곧 시작돼요. 기다리는 동안 게임 방법을 읽어보세요!
         </p>
         <div className="w-full text-left">
@@ -170,7 +170,7 @@ export default function GameView({
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
-      <div className="flex items-center justify-between text-sm text-[var(--foreground)]/70">
+      <div className="flex items-center justify-between text-sm text-[var(--color-muted)]">
         <span>
           문제 {game.currentIndex + 1} / {game.jobs.length}
         </span>
@@ -178,7 +178,7 @@ export default function GameView({
       </div>
 
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-[var(--foreground)]/60">사건 파일</p>
+        <p className="text-sm font-semibold text-[var(--color-muted)]">사건 파일</p>
         <ClueBoard
           hints={job.hints}
           hintsOpen={game.hintsOpen}
@@ -203,21 +203,21 @@ export default function GameView({
               placeholder="정답을 입력하세요"
               className="rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-3 text-base outline-none focus:border-[var(--color-primary)] disabled:opacity-60"
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
             <button
               type="submit"
               disabled={!canSubmit || submitting}
-              className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-3 font-semibold text-white disabled:opacity-60"
+              className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-3 font-semibold text-[var(--color-on-primary)] disabled:opacity-60"
             >
               {canSubmit ? "제출하기" : "기회를 모두 사용했어요"}
             </button>
-            <p className="text-center text-sm text-[var(--foreground)]/60">
+            <p className="text-center text-sm text-[var(--color-muted)]">
               남은 기회 {MAX_ATTEMPTS - attemptsUsed}/{MAX_ATTEMPTS}
             </p>
           </form>
 
           {attemptsUsed > 0 && (
-            <div className="flex flex-col gap-1 text-sm text-[var(--foreground)]/70">
+            <div className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
               {mySubmission?.attempts.map((a, i) => (
                 <p key={i}>
                   {i + 1}차 제출: {a.answer}
@@ -227,7 +227,7 @@ export default function GameView({
           )}
         </>
       ) : (
-        <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
+        <div className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
           {mySubmission ? (
             <>
               <div className="flex flex-col gap-1 text-sm">
@@ -240,8 +240,8 @@ export default function GameView({
               <p
                 className={
                   mySubmission.correct
-                    ? "font-semibold text-[var(--color-primary)]"
-                    : "font-semibold text-red-600"
+                    ? "font-semibold text-[var(--color-success-ink)]"
+                    : "font-semibold text-[var(--color-danger)]"
                 }
               >
                 {mySubmission.correct
@@ -250,11 +250,11 @@ export default function GameView({
               </p>
             </>
           ) : (
-            <p className="text-sm text-[var(--foreground)]/60">
+            <p className="text-sm text-[var(--color-muted)]">
               이번 라운드는 제출하지 않았어요.
             </p>
           )}
-          <p className="text-sm text-[var(--foreground)]/70">
+          <p className="text-sm text-[var(--color-muted)]">
             누적 점수 {cumulativeScore}점
           </p>
         </div>

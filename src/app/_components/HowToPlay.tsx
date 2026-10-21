@@ -32,7 +32,7 @@ export default function HowToPlay() {
           <span className="text-2xl">{s.icon}</span>
           <div>
             <p className="font-semibold text-[var(--foreground)]">{s.title}</p>
-            <p className="text-sm text-[var(--foreground)]/70">{s.desc}</p>
+            <p className="text-sm text-[var(--color-muted)]">{s.desc}</p>
           </div>
         </div>
       ))}

@@ -74,7 +74,7 @@ export default function GameFlowView({
   if (game.jobs.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
-        <CaseFileCard className="flex flex-col items-center gap-4 text-center">
+        <CaseFileCard className="flex max-w-lg flex-col items-center gap-4 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/dog.png" alt="탐정 강아지" className="h-28 w-28" />
           <p className="text-lg text-[var(--foreground)]">
@@ -83,7 +83,7 @@ export default function GameFlowView({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white"
+            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)]"
           >
             설정에서 문제 선택하기
           </button>
@@ -100,7 +100,7 @@ export default function GameFlowView({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/dog.png" alt="탐정 강아지" className="h-20 w-20 shrink-0" />
             <div>
-              <h2 className="font-[family-name:var(--font-heading)] text-3xl text-[var(--color-primary)]">
+              <h2 className="font-[family-name:var(--font-heading)] text-3xl text-[var(--color-primary-ink)]">
                 커리어탐정
               </h2>
               <p className="text-lg text-[var(--foreground)]">사건 파일 준비 완료!</p>
@@ -114,14 +114,14 @@ export default function GameFlowView({
               <button
                 type="button"
                 onClick={() => setShowHowTo(true)}
-                className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-[var(--color-primary)]"
+                className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-4 text-lg font-semibold text-[var(--color-primary-ink)]"
               >
                 ❓ 게임 방법
               </button>
               <button
                 type="button"
                 onClick={handleStartWithCountdown}
-                className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-white disabled:opacity-60"
+                className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-8 py-4 text-xl font-semibold text-[var(--color-on-primary)] disabled:opacity-60"
               >
                 게임 시작
               </button>
@@ -154,7 +154,7 @@ export default function GameFlowView({
                   >
                     <span>
                       <span className="font-semibold">{s.name}</span>
-                      <span className="ml-1.5 text-[var(--foreground)]/60">
+                      <span className="ml-1.5 text-[var(--color-muted)]">
                         ({s.studentId})
                       </span>
                     </span>
@@ -163,14 +163,14 @@ export default function GameFlowView({
                       onClick={() => kickStudent(s.studentId)}
                       title="퇴장시키기"
                       aria-label={`${s.name} 퇴장시키기`}
-                      className="rounded-full px-2.5 py-1 text-base font-bold text-red-600 hover:bg-red-100"
+                      className="rounded-full px-2.5 py-1 text-base font-bold text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10"
                     >
                       ✕
                     </button>
                   </li>
                 ))}
                 {lobby.length === 0 && (
-                  <li className="col-span-full text-base text-[var(--foreground)]/50">
+                  <li className="col-span-full text-base text-[var(--color-muted)]">
                     아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
                   </li>
                 )}
@@ -213,7 +213,7 @@ export default function GameFlowView({
             type="button"
             disabled={busy || game.hintsOpen >= 5}
             onClick={() => runAction(() => revealNextHint(game.hintsOpen))}
-            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
+            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
           >
             다음 단서 공개
           </button>
@@ -221,7 +221,7 @@ export default function GameFlowView({
             type="button"
             disabled={busy || game.charCountRevealed}
             onClick={() => runAction(revealCharCount)}
-            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary)] disabled:opacity-50"
+            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
           >
             글자수 힌트 공개
           </button>
@@ -229,7 +229,7 @@ export default function GameFlowView({
             type="button"
             disabled={busy || game.initialsRevealed}
             onClick={() => runAction(revealInitials)}
-            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary)] disabled:opacity-50"
+            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
           >
             초성 힌트 공개
           </button>
@@ -249,7 +249,7 @@ export default function GameFlowView({
           type="button"
           disabled={busy}
           onClick={() => runAction(() => advanceRound(game))}
-          className="w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
+          className="w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
         >
           {isLast ? "게임 종료" : "다음 라운드"}
         </button>
@@ -263,11 +263,11 @@ export default function GameFlowView({
           {submissions.map((s) => (
             <li
               key={s.id}
-              className="flex flex-col gap-1.5 rounded-lg bg-[var(--color-surface)] px-4 py-2.5 text-base"
+              className="flex flex-col gap-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-base"
             >
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-semibold">{s.studentName}</span>
-                <span className="text-[var(--foreground)]/70">
+                <span className="text-[var(--color-muted)]">
                   시도 {s.attempts.length}/3
                 </span>
                 {revealed && (
@@ -275,8 +275,8 @@ export default function GameFlowView({
                     <span
                       className={
                         s.correct
-                          ? "font-semibold text-[var(--color-primary)]"
-                          : "font-semibold text-red-600"
+                          ? "font-semibold text-[var(--color-success-ink)]"
+                          : "font-semibold text-[var(--color-danger)]"
                       }
                     >
                       {s.correct ? `정답 (${s.score}점)` : "오답"}
@@ -293,7 +293,7 @@ export default function GameFlowView({
                               overrideSubmissionVerdict(s, job, true, game.scoring),
                             )
                           }
-                          className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-white"
+                          className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-[var(--color-on-primary)]"
                         >
                           정답 처리
                         </button>
@@ -315,15 +315,15 @@ export default function GameFlowView({
               </div>
               {revealed && s.attempts.length > 0 && (
                 <p className="text-sm">
-                  <span className="mr-1.5 text-[var(--foreground)]/50">제출:</span>
+                  <span className="mr-1.5 text-[var(--color-muted)]">제출:</span>
                   {s.attempts.map((a, i) => {
                     const verdict = judgeAnswer(a.answer, job);
                     const color =
                       verdict === "correct"
-                        ? "text-[var(--color-primary)] font-semibold"
+                        ? "text-[var(--color-primary-ink)] font-semibold"
                         : verdict === "reviewNeeded"
                           ? "text-amber-700 font-semibold"
-                          : "text-[var(--foreground)]/60";
+                          : "text-[var(--color-muted)]";
                     return (
                       <span key={i}>
                         {i > 0 && <span className="text-[var(--foreground)]/30">, </span>}
@@ -336,7 +336,7 @@ export default function GameFlowView({
             </li>
           ))}
           {submissions.length === 0 && (
-            <li className="text-base text-[var(--foreground)]/60">
+            <li className="text-base text-[var(--color-muted)]">
               아직 제출한 학생이 없어요.
             </li>
           )}

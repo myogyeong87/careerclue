@@ -81,7 +81,7 @@ export default function TeacherPage() {
             <button
               type="button"
               onClick={() => setShowQr(true)}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--foreground)]/70 transition hover:text-[var(--foreground)]"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)]"
             >
               📱 학생 접속 QR
             </button>
@@ -91,7 +91,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleEnd}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:opacity-80 disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-danger)] transition hover:opacity-80 disabled:opacity-50"
             >
               ■ 게임 종료
             </button>
@@ -101,7 +101,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleResume}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-primary)] transition hover:opacity-80 disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-primary-ink)] transition hover:opacity-80 disabled:opacity-50"
             >
               🔙 게임 화면으로
             </button>
@@ -111,7 +111,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleReset}
-              className="rounded-[var(--radius-card)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--foreground)]/70 transition hover:text-[var(--foreground)] disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)] disabled:opacity-50"
             >
               🔄 초기화
             </button>
@@ -120,7 +120,7 @@ export default function TeacherPage() {
             <button
               type="button"
               onClick={() => setShowSettings(true)}
-              className="text-sm text-[var(--foreground)]/40 transition hover:text-[var(--foreground)]/70"
+              className="text-sm text-[var(--foreground)]/40 transition hover:text-[var(--color-muted)]"
             >
               ⚙ 설정
             </button>
