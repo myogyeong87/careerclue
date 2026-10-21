@@ -1,19 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { subscribeGameState } from "@/lib/game";
+import { isRoundInProgress, subscribeGameState } from "@/lib/game";
 import { useCountdownAutoStart } from "@/lib/useCountdownAutoStart";
-import {
-  MAX_ATTEMPTS,
-  submitAttempt,
-  subscribeMySubmission,
-  subscribeStudentSubmissions,
-} from "@/lib/submissions";
-import { charCountPreview, toChosung } from "@/lib/text";
+import { subscribeStudentSubmissions } from "@/lib/submissions";
+import { PRACTICE_JOB, PRACTICE_SCORING } from "@/lib/practice";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
-import ClueBoard from "@/app/_components/ClueBoard";
 import HowToPlay from "@/app/_components/HowToPlay";
 import Countdown from "@/app/_components/Countdown";
+import StudentRound from "./StudentRound";
 
 export default function GameView({
   studentId,
@@ -23,29 +18,11 @@ export default function GameView({
   studentName: string;
 }) {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
-  const [submissionState, setSubmissionState] = useState<{
-    roundId: string | null;
-    submission: Submission | null;
-  }>({ roundId: null, submission: null });
   const [myAllSubmissions, setMyAllSubmissions] = useState<Submission[]>([]);
-  const [answer, setAnswer] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => subscribeGameState(setGame), []);
   useCountdownAutoStart(game);
   useEffect(() => subscribeStudentSubmissions(studentId, setMyAllSubmissions), [studentId]);
-
-  useEffect(() => {
-    if (!game.roundId) return;
-    const roundId = game.roundId;
-    return subscribeMySubmission(roundId, studentId, (submission) =>
-      setSubmissionState({ roundId, submission }),
-    );
-  }, [game.roundId, studentId]);
-
-  const mySubmission =
-    submissionState.roundId === game.roundId ? submissionState.submission : null;
 
   const cumulativeScore = useMemo(
     () => myAllSubmissions.reduce((sum, s) => sum + s.score, 0),
@@ -116,7 +93,35 @@ export default function GameView({
     );
   }
 
-  if (game.jobs.length === 0 || game.phase === "idle") {
+  if (game.practice && !isRoundInProgress(game)) {
+    const practice = game.practice;
+    return (
+      <StudentRound
+        key={practice.roundId}
+        kind="practice"
+        studentId={studentId}
+        studentName={studentName}
+        roundId={practice.roundId}
+        jobIndex={0}
+        job={PRACTICE_JOB}
+        scoring={PRACTICE_SCORING}
+        hintsOpen={practice.hintsOpen}
+        initialsRevealed={practice.initialsRevealed}
+        charCountRevealed={practice.charCountRevealed}
+        revealed={practice.phase === "revealed"}
+        header={
+          <div className="flex items-center justify-between gap-2">
+            <span className="rounded-full border-2 border-[var(--color-secondary)] bg-[var(--color-secondary)]/20 px-4 py-1 font-[family-name:var(--font-accent)] text-xl">
+              🧪 연습
+            </span>
+            <span className="text-sm text-[var(--color-muted)]">점수에 반영되지 않아요</span>
+          </div>
+        }
+      />
+    );
+  }
+
+  if (game.jobs.length === 0 || game.phase === "idle" || !game.roundId) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-4 px-4 py-8 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -134,135 +139,29 @@ export default function GameView({
     );
   }
 
-  const job = game.jobs[game.currentIndex];
-  const revealed = game.phase === "revealed";
-  const attemptsUsed = mySubmission?.attempts.length ?? 0;
-  const canSubmit = !revealed && attemptsUsed < MAX_ATTEMPTS;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = answer.trim();
-    if (!trimmed || !game.roundId) return;
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      const result = await submitAttempt({
-        roundId: game.roundId,
-        studentId,
-        studentName,
-        jobIndex: game.currentIndex,
-        answer: trimmed,
-        hintsOpenAtSubmit: game.hintsOpen,
-        initialsRevealedAtSubmit: game.initialsRevealed,
-      });
-      if (!result.ok) {
-        setError("이미 3번 모두 제출했어요.");
-      } else {
-        setAnswer("");
-      }
-    } catch {
-      setError("제출에 실패했어요. 다시 시도해주세요.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
-      <div className="flex items-center justify-between text-sm text-[var(--color-muted)]">
-        <span>
-          문제 {game.currentIndex + 1} / {game.jobs.length}
-        </span>
-        <span>누적 점수 {cumulativeScore}점</span>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-[var(--color-muted)]">사건 파일</p>
-        <ClueBoard
-          hints={job.hints}
-          hintsOpen={game.hintsOpen}
-          scoring={game.scoring}
-          initialsRevealed={game.initialsRevealed}
-          chosung={toChosung(job.title)}
-          charCountRevealed={game.charCountRevealed}
-          charCount={charCountPreview(job.title)}
-          revealed={revealed}
-          answer={job.title}
-        />
-      </div>
-
-      {!revealed ? (
-        <>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <input
-              type="text"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              disabled={!canSubmit || submitting}
-              placeholder="정답을 입력하세요"
-              className="rounded-lg border border-[var(--color-primary)]/30 bg-white px-3 py-3 text-base outline-none focus:border-[var(--color-primary)] disabled:opacity-60"
-            />
-            {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-            <button
-              type="submit"
-              disabled={!canSubmit || submitting}
-              className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-4 py-3 font-semibold text-[var(--color-on-primary)] disabled:opacity-60"
-            >
-              {canSubmit ? "제출하기" : "기회를 모두 사용했어요"}
-            </button>
-            <p className="text-center text-sm text-[var(--color-muted)]">
-              남은 기회 {MAX_ATTEMPTS - attemptsUsed}/{MAX_ATTEMPTS}
-            </p>
-          </form>
-
-          {attemptsUsed > 0 && (
-            <div className="flex flex-col gap-1 text-sm text-[var(--color-muted)]">
-              {mySubmission?.attempts.map((a, i) => (
-                <p key={i}>
-                  {i + 1}차 제출: {a.answer}
-                </p>
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
-          {mySubmission ? (
-            <>
-              <div className="flex flex-col gap-1 text-sm">
-                {mySubmission.attempts.map((a, i) => (
-                  <p key={i}>
-                    {i + 1}차 제출: {a.answer}
-                  </p>
-                ))}
-              </div>
-              <p
-                className={
-                  mySubmission.correct
-                    ? "font-semibold text-[var(--color-success-ink)]"
-                    : mySubmission.reviewNeeded
-                      ? "font-semibold text-[var(--color-primary-ink)]"
-                      : "font-semibold text-[var(--color-danger)]"
-                }
-              >
-                {mySubmission.correct
-                  ? `정답! +${mySubmission.score}점`
-                  : mySubmission.reviewNeeded
-                    ? "선생님이 답을 확인하고 있어요"
-                    : "오답이에요"}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-[var(--color-muted)]">
-              이번 라운드는 제출하지 않았어요.
-            </p>
-          )}
-          <p className="text-sm text-[var(--color-muted)]">
-            누적 점수 {cumulativeScore}점
-          </p>
+    <StudentRound
+      key={game.roundId}
+      kind="game"
+      studentId={studentId}
+      studentName={studentName}
+      roundId={game.roundId}
+      jobIndex={game.currentIndex}
+      job={game.jobs[game.currentIndex]}
+      scoring={game.scoring}
+      hintsOpen={game.hintsOpen}
+      initialsRevealed={game.initialsRevealed}
+      charCountRevealed={game.charCountRevealed}
+      revealed={game.phase === "revealed"}
+      header={
+        <div className="flex items-center justify-between text-sm text-[var(--color-muted)]">
+          <span>
+            문제 {game.currentIndex + 1} / {game.jobs.length}
+          </span>
+          <span>누적 점수 {cumulativeScore}점</span>
         </div>
-      )}
-    </main>
+      }
+      footer={<p className="text-sm text-[var(--color-muted)]">누적 점수 {cumulativeScore}점</p>}
+    />
   );
 }

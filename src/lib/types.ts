@@ -12,6 +12,15 @@ export interface QuestionSet {
   scoring: number[]; // 기본 [100, 80, 60, 40, 20]
 }
 
+/** 문제 세트와 별개로 진행하는 연습 라운드 상태 (진행 중이 아니면 null) */
+export interface PracticeState {
+  roundId: string;
+  hintsOpen: number;
+  initialsRevealed: boolean;
+  charCountRevealed: boolean;
+  phase: "active" | "revealed";
+}
+
 export type GamePhase = "idle" | "countdown" | "active" | "revealed" | "finished";
 
 export interface GameState {
@@ -28,6 +37,8 @@ export interface GameState {
   resumePhase: "active" | "revealed" | null;
   /** phase가 countdown일 때 카운트다운이 끝나는 시각(ms epoch). 모든 화면이 동일한 시점을 기준으로 표시 */
   countdownEndsAt: number | null;
+  /** 연습 라운드 진행 중이면 그 상태. 실제 게임 진행 상태와 섞이지 않게 별도 필드로 둠 */
+  practice: PracticeState | null;
 }
 
 export interface SubmissionAttempt {
@@ -64,4 +75,5 @@ export const EMPTY_GAME_STATE: GameState = {
   roundId: null,
   resumePhase: null,
   countdownEndsAt: null,
+  practice: null,
 };

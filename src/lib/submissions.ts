@@ -15,8 +15,11 @@ import type { Job, Submission, SubmissionAttempt } from "./types";
 
 export const MAX_ATTEMPTS = 3;
 
-function submissionsCol() {
-  return collection(db, "games", "current", "submissions");
+/** game: 실제 게임 제출 / practice: 연습 라운드 제출. 연습은 별도 컬렉션이라 순위표·오답노트·누적 점수에 섞이지 않음 */
+export type SubmissionKind = "game" | "practice";
+
+function submissionsCol(kind: SubmissionKind = "game") {
+  return collection(db, "games", kind === "practice" ? "practice" : "current", "submissions");
 }
 
 function docIdFor(roundId: string, studentId: string) {
@@ -50,8 +53,9 @@ export async function submitAttempt(params: {
   answer: string;
   hintsOpenAtSubmit: number;
   initialsRevealedAtSubmit: boolean;
+  kind?: SubmissionKind;
 }): Promise<SubmitResult> {
-  const ref = doc(submissionsCol(), docIdFor(params.roundId, params.studentId));
+  const ref = doc(submissionsCol(params.kind), docIdFor(params.roundId, params.studentId));
   const attempt: SubmissionAttempt = {
     answer: params.answer,
     hintsOpenAtSubmit: params.hintsOpenAtSubmit,
@@ -89,8 +93,9 @@ export function subscribeMySubmission(
   roundId: string,
   studentId: string,
   onChange: (submission: Submission | null) => void,
+  kind: SubmissionKind = "game",
 ) {
-  const ref = doc(submissionsCol(), docIdFor(roundId, studentId));
+  const ref = doc(submissionsCol(kind), docIdFor(roundId, studentId));
   return onSnapshot(ref, (snap) => {
     onChange(snap.exists() ? fromData(snap.id, snap.data()) : null);
   });
@@ -99,8 +104,9 @@ export function subscribeMySubmission(
 export function subscribeRoundSubmissions(
   roundId: string,
   onChange: (submissions: Submission[]) => void,
+  kind: SubmissionKind = "game",
 ) {
-  const q = query(submissionsCol(), where("roundId", "==", roundId));
+  const q = query(submissionsCol(kind), where("roundId", "==", roundId));
   return onSnapshot(q, (snap) => {
     onChange(snap.docs.map((d) => fromData(d.id, d.data())));
   });
@@ -129,8 +135,9 @@ export async function gradeRound(
   roundId: string,
   job: Job,
   scoring: number[],
+  kind: SubmissionKind = "game",
 ): Promise<void> {
-  const q = query(submissionsCol(), where("roundId", "==", roundId));
+  const q = query(submissionsCol(kind), where("roundId", "==", roundId));
   const snap = await getDocs(q);
   if (snap.empty) return;
 
@@ -186,8 +193,9 @@ export function pendingAttemptOf(
 export async function resolvePendingSubmission(
   submissionId: string,
   verdict: { correct: true; score: number; stage: number } | { correct: false },
+  kind: SubmissionKind = "game",
 ): Promise<void> {
-  const ref = doc(submissionsCol(), submissionId);
+  const ref = doc(submissionsCol(kind), submissionId);
   await updateDoc(
     ref,
     verdict.correct
@@ -196,8 +204,8 @@ export async function resolvePendingSubmission(
   );
 }
 
-export async function clearAllSubmissions(): Promise<void> {
-  const snap = await getDocs(submissionsCol());
+export async function clearAllSubmissions(kind: SubmissionKind = "game"): Promise<void> {
+  const snap = await getDocs(submissionsCol(kind));
   const chunks: (typeof snap.docs)[] = [];
   for (let i = 0; i < snap.docs.length; i += 400) {
     chunks.push(snap.docs.slice(i, i + 400));

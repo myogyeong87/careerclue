@@ -36,6 +36,7 @@ export function subscribeGameState(
         roundId: data.roundId ?? null,
         resumePhase: data.resumePhase ?? null,
         countdownEndsAt: data.countdownEndsAt ?? null,
+        practice: data.practice ?? null,
       });
     },
     (err) => onError?.(err),

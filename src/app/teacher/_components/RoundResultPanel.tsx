@@ -5,6 +5,7 @@ import {
   outcomeOf,
   pendingAttemptOf,
   resolvePendingSubmission,
+  type SubmissionKind,
 } from "@/lib/submissions";
 import { tfs } from "@/lib/teacherFontSize";
 import type { Job, Submission } from "@/lib/types";
@@ -15,6 +16,7 @@ import Modal from "@/app/_components/Modal";
  * 정답/오답/보류 인원 카드 + 보류 처리 목록 + 다음 진행 버튼. 정답·오답에는 이름을 보여주지 않는다.
  */
 export default function RoundResultPanel({
+  kind,
   job,
   scoring,
   submissions,
@@ -22,6 +24,7 @@ export default function RoundResultPanel({
   onAdvance,
   extra,
 }: {
+  kind: SubmissionKind;
   job: Job;
   scoring: number[];
   submissions: Submission[];
@@ -60,6 +63,7 @@ export default function RoundResultPanel({
       await resolvePendingSubmission(
         s.id,
         isCorrect ? { correct: true, score, stage } : { correct: false },
+        kind,
       );
     } catch {
       setProcessing((cur) => {
@@ -81,7 +85,7 @@ export default function RoundResultPanel({
     try {
       if (skipPending) {
         await Promise.all(
-          pending.map((s) => resolvePendingSubmission(s.id, { correct: false })),
+          pending.map((s) => resolvePendingSubmission(s.id, { correct: false }, kind)),
         );
       }
       setConfirmSkip(false);
