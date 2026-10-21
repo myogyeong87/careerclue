@@ -11,7 +11,7 @@ import {
   revealNextHint,
   subscribeGameState,
 } from "@/lib/game";
-import { kickStudent, subscribeLobby, type LobbyStudent } from "@/lib/lobby";
+import { subscribeLobby, type LobbyStudent } from "@/lib/lobby";
 import {
 
   subscribeRoundSubmissions,
@@ -25,7 +25,7 @@ import QrCode from "@/app/_components/QrCode";
 import HowToPlayModal from "@/app/_components/HowToPlayModal";
 import Countdown from "@/app/_components/Countdown";
 import RoundResultPanel from "./RoundResultPanel";
-import { tfs } from "@/lib/teacherFontSize";
+import LobbyBoard from "./LobbyBoard";
 
 const START_COUNTDOWN_MS = 3000;
 
@@ -130,54 +130,16 @@ export default function GameFlowView({
           )}
         </div>
 
-        <div className="flex flex-1 items-center justify-center">
-          <div className="grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-[1fr_2fr]">
+        <div className="flex flex-1 items-start justify-center">
+          <div className="grid w-full max-w-[1600px] grid-cols-1 items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)]">
             {origin && (
-              <CaseFileCard className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]/80">
-                  📱 이 QR로 접속하세요
-                </h3>
+              <CaseFileCard className="flex flex-col items-center justify-center gap-10 text-center">
+                <h3 className="text-2xl font-semibold">📱 이 QR로 접속하세요</h3>
                 <QrCode url={`${origin}/student`} />
               </CaseFileCard>
             )}
 
-            <CaseFileCard className="flex flex-1 flex-col gap-5 text-left">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]/80">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/detective-story.png" alt="" className="h-6 w-6" />
-                학생 대기 현황 ({lobby.length}명)
-              </h3>
-              <ul className="grid max-h-[55vh] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
-                {lobby.map((s) => (
-                  <li
-                    key={s.studentId}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-background)] px-4 py-3"
-                    style={{ fontSize: tfs() }}
-                  >
-                    <span>
-                      <span className="font-semibold">{s.name}</span>
-                      <span className="ml-1.5 text-[var(--color-muted)]">
-                        ({s.studentId})
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => kickStudent(s.studentId)}
-                      title="퇴장시키기"
-                      aria-label={`${s.name} 퇴장시키기`}
-                      className="rounded-full px-2.5 py-1 text-base font-bold text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-                {lobby.length === 0 && (
-                  <li className="col-span-full text-base text-[var(--color-muted)]">
-                    아직 접속한 학생이 없어요. QR로 접속을 안내해주세요.
-                  </li>
-                )}
-              </ul>
-            </CaseFileCard>
+            <LobbyBoard students={lobby} />
           </div>
         </div>
 
