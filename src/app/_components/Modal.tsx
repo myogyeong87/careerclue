@@ -2,10 +2,12 @@ export default function Modal({
   children,
   onClose,
   className = "",
+  style,
 }: {
   children: React.ReactNode;
   onClose: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
@@ -14,6 +16,7 @@ export default function Modal({
     >
       <div
         className={`rounded-[var(--radius-card)] bg-white p-8 shadow-[var(--shadow-card)] ${className}`}
+        style={style}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { subscribeGameState } from "@/lib/game";
 import { subscribeAllSubmissions } from "@/lib/submissions";
 import { playRevealChime } from "@/lib/sound";
+import { tfs } from "@/lib/teacherFontSize";
 import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 
 type RoundTag = "speed" | "allCorrect" | "struggle" | "comeback";
@@ -132,17 +133,17 @@ export default function ResultsTab() {
 
   return (
     <div className="flex flex-col gap-10">
-      <section>
-        <h2 className="mb-3 text-xl">순위표</h2>
+      <section style={{ fontSize: tfs() }}>
+        <h2 className="mb-3 text-[1.25em]">순위표</h2>
 
         {restEntries.length > 0 && (
           <ol className="mb-4 flex flex-col gap-1.5">
             {restEntries.map((entry, i) => (
               <li
                 key={entry.studentId}
-                className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm"
+                className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2"
               >
-                <span className="w-10 text-[var(--color-muted)]">
+                <span className="min-w-[2.5em] text-[var(--color-muted)]">
                   {topCount + i + 1}위
                 </span>
                 <span className="flex-1">{entry.studentName}</span>
@@ -164,7 +165,7 @@ export default function ResultsTab() {
                   key={entry.studentId}
                   className="flex items-center gap-3 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-primary)]/30 bg-[var(--color-background)] px-4 py-3 text-[var(--foreground)]/40"
                 >
-                  <span className="w-10 font-[family-name:var(--font-accent)] text-lg">
+                  <span className="min-w-[2.5em] font-[family-name:var(--font-accent)] text-[1.1em]">
                     {place}위
                   </span>
                   <span className="flex-1 font-semibold">???</span>
@@ -182,9 +183,9 @@ export default function ResultsTab() {
                     : "bg-[var(--color-accent)]/25 text-[var(--foreground)]"
                 }`}
               >
-                <span className="w-10 text-2xl">{MEDAL[place] ?? `${place}위`}</span>
+                <span className="min-w-[2.5em] text-[1.4em]">{MEDAL[place] ?? `${place}위`}</span>
                 <span className="flex-1 text-lg font-semibold">{entry.studentName}</span>
-                <span className="font-[family-name:var(--font-accent)] text-xl">
+                <span className="font-[family-name:var(--font-accent)] text-[1.2em]">
                   {entry.score}점
                 </span>
               </div>

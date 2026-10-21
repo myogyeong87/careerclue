@@ -25,6 +25,7 @@ import CaseFileCard from "@/app/_components/CaseFileCard";
 import QrCode from "@/app/_components/QrCode";
 import HowToPlayModal from "@/app/_components/HowToPlayModal";
 import Countdown from "@/app/_components/Countdown";
+import { tfs } from "@/lib/teacherFontSize";
 
 const START_COUNTDOWN_MS = 3000;
 
@@ -150,7 +151,8 @@ export default function GameFlowView({
                 {lobby.map((s) => (
                   <li
                     key={s.studentId}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-background)] px-4 py-3 text-lg"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-background)] px-4 py-3"
+                    style={{ fontSize: tfs() }}
                   >
                     <span>
                       <span className="font-semibold">{s.name}</span>

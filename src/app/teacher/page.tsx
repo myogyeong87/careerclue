@@ -8,12 +8,15 @@ import QrModal from "@/app/_components/QrModal";
 import GameFlowView from "./_components/GameFlowView";
 import ResultsTab from "./_components/ResultsTab";
 import SettingsPanel from "./_components/SettingsPanel";
+import FontSizeControls from "./_components/FontSizeControls";
+import { useTeacherFontSize } from "@/lib/teacherFontSize";
 
 export default function TeacherPage() {
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [showSettings, setShowSettings] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [busy, setBusy] = useState(false);
+  const { size: fontSize } = useTeacherFontSize();
 
   useEffect(() => subscribeGameState(setGame), []);
   useCountdownAutoStart(game);
@@ -73,15 +76,17 @@ export default function TeacherPage() {
       className={`mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 ${
         isGameFlow ? "max-w-none px-8" : "max-w-5xl"
       }`}
+      style={{ "--tfs": `${fontSize}px` } as React.CSSProperties}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl">{heading}</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <FontSizeControls />
           {!showSettings && (
             <button
               type="button"
               onClick={() => setShowQr(true)}
-              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)]"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-base font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)]"
             >
               📱 학생 접속 QR
             </button>
@@ -91,7 +96,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleEnd}
-              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-danger)] transition hover:opacity-80 disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-base font-semibold text-[var(--color-danger)] transition hover:opacity-80 disabled:opacity-50"
             >
               ■ 게임 종료
             </button>
@@ -101,7 +106,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleResume}
-              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-primary-ink)] transition hover:opacity-80 disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-base font-semibold text-[var(--color-primary-ink)] transition hover:opacity-80 disabled:opacity-50"
             >
               🔙 게임 화면으로
             </button>
@@ -111,7 +116,7 @@ export default function TeacherPage() {
               type="button"
               disabled={busy}
               onClick={handleReset}
-              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)] disabled:opacity-50"
+              className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-base font-semibold text-[var(--color-muted)] transition hover:text-[var(--foreground)] disabled:opacity-50"
             >
               🔄 초기화
             </button>
