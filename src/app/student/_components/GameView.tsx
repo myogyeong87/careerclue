@@ -241,12 +241,16 @@ export default function GameView({
                 className={
                   mySubmission.correct
                     ? "font-semibold text-[var(--color-success-ink)]"
-                    : "font-semibold text-[var(--color-danger)]"
+                    : mySubmission.reviewNeeded
+                      ? "font-semibold text-[var(--color-primary-ink)]"
+                      : "font-semibold text-[var(--color-danger)]"
                 }
               >
                 {mySubmission.correct
                   ? `정답! +${mySubmission.score}점`
-                  : "오답이에요"}
+                  : mySubmission.reviewNeeded
+                    ? "선생님이 답을 확인하고 있어요"
+                    : "오답이에요"}
               </p>
             </>
           ) : (

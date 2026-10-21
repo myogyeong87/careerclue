@@ -5,6 +5,7 @@ import {
   onSnapshot,
   query,
   runTransaction,
+  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
@@ -161,33 +162,38 @@ export async function gradeRound(
   await batch.commit();
 }
 
-/** 교사가 "검토 필요" 제출을 수동으로 정답/오답 전환 (스펙 8장) */
-export async function overrideSubmissionVerdict(
+/** 정답 처리됐으면 정답 우선, 아니면 보류 여부 → 결과 화면 분류 */
+export type RoundOutcome = "correct" | "pending" | "wrong";
+
+export function outcomeOf(submission: Submission): RoundOutcome {
+  if (submission.correct) return "correct";
+  if (submission.reviewNeeded) return "pending";
+  return "wrong";
+}
+
+/** 보류로 분류된 시도(가장 먼저 보류 판정된 답)와 그 시점의 힌트 단계 */
+export function pendingAttemptOf(
   submission: Submission,
   job: Job,
-  correct: boolean,
-  scoring: number[],
-): Promise<void> {
-  const ref = doc(submissionsCol(), submission.id);
-  if (!correct) {
-    await runTransaction(db, async (tx) => {
-      tx.update(ref, { correct: false, score: 0, scoredHintStage: 0, reviewNeeded: false });
-    });
-    return;
-  }
-  // 애매 판정(편집거리 오타 수준)을 유발한 시도 기준으로 점수 재계산
-  const ambiguousAttempt =
+): { answer: string; stage: number } {
+  const attempt =
     submission.attempts.find((a) => judgeAnswer(a.answer, job) === "reviewNeeded") ??
     submission.attempts[0];
-  const stage = ambiguousAttempt?.hintsOpenAtSubmit ?? 1;
-  await runTransaction(db, async (tx) => {
-    tx.update(ref, {
-      correct: true,
-      score: scoring[stage - 1] ?? 0,
-      scoredHintStage: stage,
-      reviewNeeded: false,
-    });
-  });
+  return { answer: attempt?.answer ?? "", stage: attempt?.hintsOpenAtSubmit ?? 1 };
+}
+
+/** 교사가 보류 항목을 처리: 정답이면 입력한 점수로, 오답이면 0점으로 저장 */
+export async function resolvePendingSubmission(
+  submissionId: string,
+  verdict: { correct: true; score: number; stage: number } | { correct: false },
+): Promise<void> {
+  const ref = doc(submissionsCol(), submissionId);
+  await updateDoc(
+    ref,
+    verdict.correct
+      ? { correct: true, score: verdict.score, scoredHintStage: verdict.stage, reviewNeeded: false }
+      : { correct: false, score: 0, scoredHintStage: 0, reviewNeeded: false },
+  );
 }
 
 export async function clearAllSubmissions(): Promise<void> {

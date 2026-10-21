@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { judgeAnswer } from "@/lib/answerJudge";
 import {
   advanceRound,
   beginCountdown,
@@ -14,7 +13,7 @@ import {
 } from "@/lib/game";
 import { kickStudent, subscribeLobby, type LobbyStudent } from "@/lib/lobby";
 import {
-  overrideSubmissionVerdict,
+
   subscribeRoundSubmissions,
 } from "@/lib/submissions";
 import { charCountPreview, toChosung } from "@/lib/text";
@@ -25,6 +24,7 @@ import CaseFileCard from "@/app/_components/CaseFileCard";
 import QrCode from "@/app/_components/QrCode";
 import HowToPlayModal from "@/app/_components/HowToPlayModal";
 import Countdown from "@/app/_components/Countdown";
+import RoundResultPanel from "./RoundResultPanel";
 import { tfs } from "@/lib/teacherFontSize";
 
 const START_COUNTDOWN_MS = 3000;
@@ -190,9 +190,27 @@ export default function GameFlowView({
   const isLast = game.currentIndex >= game.jobs.length - 1;
   const revealed = game.phase === "revealed";
 
+  if (revealed) {
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+        <p className="text-2xl font-semibold text-[var(--color-muted)]">
+          문제 {game.currentIndex + 1} / {game.jobs.length}
+        </p>
+        <RoundResultPanel
+          key={game.roundId}
+          job={job}
+          scoring={game.scoring}
+          submissions={submissions}
+          advanceLabel={isLast ? "게임 종료" : "다음 라운드 ▶"}
+          onAdvance={() => advanceRound(game)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <p className="text-lg font-semibold text-[var(--foreground)]">
+      <p className="text-2xl font-semibold text-[var(--color-muted)]">
         문제 {game.currentIndex + 1} / {game.jobs.length}
       </p>
 
@@ -204,143 +222,61 @@ export default function GameFlowView({
         chosung={toChosung(job.title)}
         charCountRevealed={game.charCountRevealed}
         charCount={charCountPreview(job.title)}
-        revealed={revealed}
-        answer={job.title}
+        revealed={false}
         size="large"
       />
 
-      {!revealed && (
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            disabled={busy || game.hintsOpen >= 5}
-            onClick={() => runAction(() => revealNextHint(game.hintsOpen))}
-            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
-          >
-            다음 단서 공개
-          </button>
-          <button
-            type="button"
-            disabled={busy || game.charCountRevealed}
-            onClick={() => runAction(revealCharCount)}
-            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
-          >
-            글자수 힌트 공개
-          </button>
-          <button
-            type="button"
-            disabled={busy || game.initialsRevealed}
-            onClick={() => runAction(revealInitials)}
-            className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
-          >
-            초성 힌트 공개
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => runAction(() => revealAnswer(game))}
-            className="rounded-[var(--radius-card)] bg-[var(--foreground)] px-6 py-3 text-base font-semibold text-white disabled:opacity-50"
-          >
-            정답 공개
-          </button>
-        </div>
-      )}
-
-      {revealed && (
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={busy || game.hintsOpen >= 5}
+          onClick={() => runAction(() => revealNextHint(game.hintsOpen))}
+          className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-7 py-4 text-xl font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
+        >
+          다음 단서 공개
+        </button>
+        <button
+          type="button"
+          disabled={busy || game.charCountRevealed}
+          onClick={() => runAction(revealCharCount)}
+          className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] bg-white px-7 py-4 text-xl font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
+        >
+          글자수 힌트 공개
+        </button>
+        <button
+          type="button"
+          disabled={busy || game.initialsRevealed}
+          onClick={() => runAction(revealInitials)}
+          className="rounded-[var(--radius-card)] border-2 border-[var(--color-primary)] bg-white px-7 py-4 text-xl font-semibold text-[var(--color-primary-ink)] disabled:opacity-50"
+        >
+          초성 힌트 공개
+        </button>
         <button
           type="button"
           disabled={busy}
-          onClick={() => runAction(() => advanceRound(game))}
-          className="w-fit rounded-[var(--radius-card)] bg-[var(--color-primary)] px-6 py-3 text-base font-semibold text-[var(--color-on-primary)] disabled:opacity-50"
+          onClick={() => runAction(() => revealAnswer(game))}
+          className="rounded-[var(--radius-card)] bg-[var(--foreground)] px-7 py-4 text-xl font-semibold text-white disabled:opacity-50"
         >
-          {isLast ? "게임 종료" : "다음 라운드"}
+          정답 공개
         </button>
-      )}
+      </div>
 
       <div>
-        <h3 className="mb-2 text-base font-semibold text-[var(--foreground)]">
+        <h3 className="mb-2 text-xl font-semibold text-[var(--foreground)]">
           제출 현황 ({submissions.length}명)
         </h3>
-        <ul className="flex flex-col gap-1.5">
+        <ul className="flex flex-wrap gap-2">
           {submissions.map((s) => (
             <li
               key={s.id}
-              className="flex flex-col gap-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-base"
+              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-lg"
             >
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-semibold">{s.studentName}</span>
-                <span className="text-[var(--color-muted)]">
-                  시도 {s.attempts.length}/3
-                </span>
-                {revealed && (
-                  <>
-                    <span
-                      className={
-                        s.correct
-                          ? "font-semibold text-[var(--color-success-ink)]"
-                          : "font-semibold text-[var(--color-danger)]"
-                      }
-                    >
-                      {s.correct ? `정답 (${s.score}점)` : "오답"}
-                    </span>
-                    {s.reviewNeeded && (
-                      <span className="ml-auto flex items-center gap-2">
-                        <span className="rounded-full bg-amber-200 px-2.5 py-1 text-sm font-semibold text-amber-800">
-                          검토 필요
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            runAction(() =>
-                              overrideSubmissionVerdict(s, job, true, game.scoring),
-                            )
-                          }
-                          className="rounded bg-[var(--color-primary)] px-2.5 py-1 text-sm font-semibold text-[var(--color-on-primary)]"
-                        >
-                          정답 처리
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            runAction(() =>
-                              overrideSubmissionVerdict(s, job, false, game.scoring),
-                            )
-                          }
-                          className="rounded bg-white px-2.5 py-1 text-sm font-semibold"
-                        >
-                          오답 유지
-                        </button>
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              {revealed && s.attempts.length > 0 && (
-                <p className="text-sm">
-                  <span className="mr-1.5 text-[var(--color-muted)]">제출:</span>
-                  {s.attempts.map((a, i) => {
-                    const verdict = judgeAnswer(a.answer, job);
-                    const color =
-                      verdict === "correct"
-                        ? "text-[var(--color-primary-ink)] font-semibold"
-                        : verdict === "reviewNeeded"
-                          ? "text-amber-700 font-semibold"
-                          : "text-[var(--color-muted)]";
-                    return (
-                      <span key={i}>
-                        {i > 0 && <span className="text-[var(--foreground)]/30">, </span>}
-                        <span className={color}>{a.answer}</span>
-                      </span>
-                    );
-                  })}
-                </p>
-              )}
+              <span className="font-semibold">{s.studentName}</span>
+              <span className="ml-2 text-[var(--color-muted)]">{s.attempts.length}/3</span>
             </li>
           ))}
           {submissions.length === 0 && (
-            <li className="text-base text-[var(--color-muted)]">
-              아직 제출한 학생이 없어요.
-            </li>
+            <li className="text-lg text-[var(--color-muted)]">아직 제출한 학생이 없어요.</li>
           )}
         </ul>
       </div>
