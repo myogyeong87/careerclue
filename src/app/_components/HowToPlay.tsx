@@ -1,4 +1,4 @@
-const STEPS = [
+export const HOW_TO_STEPS = [
   {
     icon: "🔍",
     title: "단서로 추리해요",
@@ -21,19 +21,18 @@ const STEPS = [
   },
 ];
 
-/** scaled: 부모의 글자 크기(교사 화면 --tfs)를 기준으로 em 단위로 커짐 */
-export default function HowToPlay({ scaled = false }: { scaled?: boolean }) {
+export default function HowToPlay() {
   return (
     <div className="flex flex-col gap-3">
-      {STEPS.map((s) => (
+      {HOW_TO_STEPS.map((s) => (
         <div
           key={s.title}
           className="flex items-start gap-3 rounded-[var(--radius-card)] border-2 border-[var(--color-primary)]/30 bg-[var(--color-background)] px-4 py-3 text-left"
         >
-          <span className={scaled ? "text-[1.5em]" : "text-2xl"}>{s.icon}</span>
+          <span className="text-2xl">{s.icon}</span>
           <div>
             <p className="font-semibold text-[var(--foreground)]">{s.title}</p>
-            <p className={`${scaled ? "text-[0.9em]" : "text-sm"} text-[var(--color-muted)]`}>{s.desc}</p>
+            <p className="text-sm text-[var(--color-muted)]">{s.desc}</p>
           </div>
         </div>
       ))}
