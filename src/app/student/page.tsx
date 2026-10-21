@@ -5,6 +5,7 @@ import { checkOrRegisterStudent } from "@/lib/roster";
 import { joinLobby, subscribeLobbyPresence } from "@/lib/lobby";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import GameView from "./_components/GameView";
+import MadeBy from "@/app/_components/MadeBy";
 
 const STUDENT_ID_KEY = "jikeop-quiz:studentId";
 
@@ -89,7 +90,8 @@ export default function StudentPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 pb-4">
+      <div className="flex-1" />
       <div className="flex flex-col items-center gap-2 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/dog.png" alt="탐정 강아지" className="h-24 w-24" />
@@ -132,6 +134,7 @@ export default function StudentPage() {
           {submitting ? "확인 중..." : "입장하기"}
         </button>
       </form>
+      <MadeBy />
     </main>
   );
 }

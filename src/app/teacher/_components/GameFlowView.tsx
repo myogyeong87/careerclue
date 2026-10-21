@@ -22,6 +22,7 @@ import Countdown from "@/app/_components/Countdown";
 import LobbyBoard from "./LobbyBoard";
 import RoundStage from "./RoundStage";
 import PracticeStage from "./PracticeStage";
+import MadeBy from "@/app/_components/MadeBy";
 
 const START_COUNTDOWN_MS = 3000;
 
@@ -86,7 +87,7 @@ export default function GameFlowView({
 
   if (game.jobs.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 pt-16 text-center">
         <CaseFileCard className="flex max-w-xl flex-col items-center gap-5 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/dog.png" alt="탐정 강아지" className="h-28 w-28" />
@@ -100,6 +101,7 @@ export default function GameFlowView({
           </button>
           <div className="flex flex-wrap justify-center gap-3">{howToButtons}</div>
         </CaseFileCard>
+        <MadeBy />
         {howToModal}
       </div>
     );
@@ -149,6 +151,7 @@ export default function GameFlowView({
           </div>
         </div>
 
+        <MadeBy />
         {howToModal}
       </div>
     );
