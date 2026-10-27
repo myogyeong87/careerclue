@@ -13,7 +13,8 @@ import Modal from "@/app/_components/Modal";
 
 /**
  * 정답 공개 후 교사 화면 결과 영역.
- * 정답/오답/보류 인원 카드 + 보류 처리 목록 + 다음 진행 버튼. 정답·오답에는 이름을 보여주지 않는다.
+ * 정답/오답/보류 인원 카드 + 보류 처리 목록 + 다음 진행 버튼.
+ * 정답 카드를 누르면 점수별 정답자, 오답 카드를 누르면 오답 목록(이름은 따로 눌러야 보임)을 펼친다.
  */
 export default function RoundResultPanel({
   kind,
@@ -33,7 +34,9 @@ export default function RoundResultPanel({
   /** 정답 문구 아래에 추가로 보여줄 내용 (연습 라운드의 단계별 점수 등) */
   extra?: React.ReactNode;
 }) {
+  const [correctOpen, setCorrectOpen] = useState(false);
   const [wrongOpen, setWrongOpen] = useState(false);
+  const [wrongNamesShown, setWrongNamesShown] = useState(false);
   const [shownNames, setShownNames] = useState<Set<string>>(new Set());
   const [scoreInputs, setScoreInputs] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState<Set<string>>(new Set());
@@ -46,10 +49,30 @@ export default function RoundResultPanel({
     .filter((s) => outcomeOf(s) === "pending" && !processing.has(s.id))
     .sort((a, b) => a.id.localeCompare(b.id));
 
-  // 오답 답 목록은 학생 순서를 짐작할 수 없게 답 텍스트 기준으로 정렬
+  // 점수가 높은 순으로 정답자를 묶음 (같은 점수 안에서는 학번 순)
+  const correctGroups = Array.from(
+    correct.reduce((map, s) => {
+      const list = map.get(s.score) ?? [];
+      list.push(s);
+      return map.set(s.score, list);
+    }, new Map<number, Submission[]>()),
+  )
+    .sort(([a], [b]) => b - a)
+    .map(([score, list]) => ({
+      score,
+      list: list.sort((a, b) =>
+        a.studentId.localeCompare(b.studentId, undefined, { numeric: true }),
+      ),
+    }));
+
+  // 오답 목록은 이름을 숨긴 상태에서 학생 순서를 짐작할 수 없게 답 텍스트 기준으로 정렬
   const wrongAnswers = wrong
-    .map((s) => s.attempts.map((a) => a.answer).join(" · "))
-    .sort((a, b) => a.localeCompare(b, "ko"));
+    .map((s) => ({
+      id: s.id,
+      name: s.studentName,
+      answer: s.attempts.map((a) => a.answer).join(" · "),
+    }))
+    .sort((a, b) => a.answer.localeCompare(b.answer, "ko"));
 
   const resolve = async (s: Submission, isCorrect: boolean) => {
     const { stage } = pendingAttemptOf(s, job);
@@ -98,6 +121,8 @@ export default function RoundResultPanel({
   return (
     <div className="flex flex-1 flex-col gap-5">
       <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-[var(--radius-card)] bg-[var(--color-primary)] px-10 py-6 text-[var(--color-on-primary)] shadow-[var(--shadow-card)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/dog.png" alt="" className="h-24 w-24 shrink-0 motion-safe:animate-[rankPop_0.6s_cubic-bezier(0.2,1.4,0.4,1)]" />
         <span className="font-[family-name:var(--font-accent)] text-4xl opacity-80">정답</span>
         <span className="font-[family-name:var(--font-heading)] text-7xl font-bold leading-tight">
           {job.title}
@@ -107,7 +132,13 @@ export default function RoundResultPanel({
       {extra}
 
       <div className="grid grid-cols-3 gap-4">
-        <CountCard label="정답" count={correct.length} tone="success" />
+        <CountCard
+          label="정답"
+          count={correct.length}
+          tone="success"
+          onClick={correct.length > 0 ? () => setCorrectOpen((v) => !v) : undefined}
+          hint={correct.length > 0 ? (correctOpen ? "접기 ▲" : "눌러서 정답자 보기 ▼") : undefined}
+        />
         <CountCard
           label="오답"
           count={wrong.length}
@@ -118,20 +149,53 @@ export default function RoundResultPanel({
         <CountCard label="보류" count={pending.length} tone="primary" />
       </div>
 
-      {wrongOpen && wrongAnswers.length > 0 && (
-        <ul
-          className="flex flex-wrap gap-3 rounded-[var(--radius-card)] border-2 border-[var(--color-danger)]/40 bg-[var(--color-surface)] p-4"
+      {correctOpen && correctGroups.length > 0 && (
+        <div
+          className="flex flex-col gap-3 rounded-[var(--radius-card)] border-2 border-[var(--color-success)]/50 bg-[var(--color-surface)] p-4"
           style={{ fontSize: tfs() }}
         >
-          {wrongAnswers.map((answer, i) => (
-            <li
-              key={i}
-              className="rounded-lg bg-[var(--color-danger)]/10 px-[0.6em] py-[0.2em] text-[var(--foreground)]"
-            >
-              {answer}
-            </li>
+          {correctGroups.map(({ score, list }) => (
+            <div key={score} className="flex flex-wrap items-center gap-3">
+              <span className="shrink-0 rounded-full bg-[var(--color-success)] px-[0.7em] py-[0.15em] font-[family-name:var(--font-accent)] text-[var(--foreground)]">
+                {score === scoring[0] ? "🏆 " : ""}
+                {score}점 · {list.length}명
+              </span>
+              {list.map((s) => (
+                <span
+                  key={s.id}
+                  className="rounded-lg bg-[var(--color-success)]/12 px-[0.6em] py-[0.2em] font-semibold"
+                >
+                  {s.studentName}
+                </span>
+              ))}
+            </div>
           ))}
-        </ul>
+        </div>
+      )}
+
+      {wrongOpen && wrongAnswers.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border-2 border-[var(--color-danger)]/40 bg-[var(--color-surface)] p-4">
+          <button
+            type="button"
+            onClick={() => setWrongNamesShown((v) => !v)}
+            className="w-fit self-end rounded-lg border-2 border-[var(--color-border)] bg-white px-4 py-1.5 text-lg font-semibold"
+          >
+            {wrongNamesShown ? "이름 숨기기" : "누가 썼는지 보기 👀"}
+          </button>
+          <ul className="flex flex-wrap gap-3" style={{ fontSize: tfs() }}>
+            {wrongAnswers.map((w) => (
+              <li
+                key={w.id}
+                className="rounded-lg bg-[var(--color-danger)]/10 px-[0.6em] py-[0.2em] text-[var(--foreground)]"
+              >
+                {w.answer}
+                {wrongNamesShown && (
+                  <span className="ml-[0.5em] text-[0.75em] text-[var(--color-muted)]">{w.name}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {pending.length > 0 && (

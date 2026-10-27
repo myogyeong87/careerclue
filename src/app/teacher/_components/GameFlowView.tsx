@@ -22,6 +22,7 @@ import Countdown from "@/app/_components/Countdown";
 import LobbyBoard from "./LobbyBoard";
 import RoundStage from "./RoundStage";
 import PracticeStage from "./PracticeStage";
+import ScoreboardButton from "./ScoreboardButton";
 import MadeBy from "@/app/_components/MadeBy";
 
 const START_COUNTDOWN_MS = 3000;
@@ -177,6 +178,7 @@ export default function GameFlowView({
       onReveal={() => revealAnswer(game)}
       advanceLabel={isLast ? "게임 종료" : "다음 라운드 ▶"}
       onAdvance={() => advanceRound(game)}
+      headerActions={<ScoreboardButton />}
     />
   );
 }

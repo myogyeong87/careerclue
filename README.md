@@ -40,13 +40,13 @@
 ## 폴더 구조
 
 - `src/app/` — 역할 선택(`/`), 교사 화면(`/teacher`, 탭 4개), 학생 화면(`/student`)
-- `src/lib/` — Firestore 서비스 함수(`questionSets`, `game`, `submissions`, `roster`), 타입(`types.ts`), 정답 판정(`answerJudge.ts`), 텍스트 유틸(초성·글자 수 미리보기: `text.ts`)
+- `src/lib/` — Firestore 서비스 함수(`questionSets`, `game`, `submissions`, `lobby`), 타입(`types.ts`), 정답 판정(`answerJudge.ts`), 텍스트 유틸(초성·글자 수 미리보기: `text.ts`)
 - `firestore.rules`, `firebase.json`, `.firebaserc` — Firestore 규칙/프로젝트 설정
 - `jikeop-quiz-spec.md` — 데이터 모델·화면 구성·게임 흐름 등 전체 스펙
 
 ## 구현 현황
 
-- [x] 역할 선택, 학생 학번+이름 등록/재접속 대조
+- [x] 역할 선택, 학생 학번+이름 입장 (같은 학번으로 다시 들어오면 이름이 달라도 점수가 이어짐)
 - [x] 교사: 문제 선택(목록·적용·복제·삭제·JSON 가져오기/내보내기)
 - [x] 교사: 게임 진행(단서·초성 공개, 정답 공개, 채점, 검토 필요 수동 전환)
 - [x] 교사: 세트 편집(문제/힌트 드래그 순서 변경, 내용 수정)

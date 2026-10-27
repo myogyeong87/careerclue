@@ -54,6 +54,7 @@ export async function revealPracticeInitials(): Promise<void> {
 
 /** 실제 게임과 같은 채점 로직으로 연습 제출을 채점 (연습 전용 컬렉션) */
 export async function revealPracticeAnswer(practice: PracticeState): Promise<void> {
-  await updateDoc(GAME_DOC, { "practice.phase": "revealed" });
-  await gradeRound(practice.roundId, PRACTICE_JOB, PRACTICE_SCORING, "practice");
+  await gradeRound(practice.roundId, PRACTICE_JOB, PRACTICE_SCORING, "practice", (batch) =>
+    batch.update(GAME_DOC, { "practice.phase": "revealed" }),
+  );
 }

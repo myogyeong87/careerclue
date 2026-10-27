@@ -135,11 +135,11 @@ export default function StudentRound({
             </button>
           </form>
 
-          <AttemptSlots attempts={mySubmission?.attempts ?? []} />
+          <AttemptSlots attempts={mySubmission?.attempts ?? []} scoring={scoring} />
         </>
       ) : (
         <>
-          <ResultCard submission={mySubmission} />
+          <ResultCard submission={mySubmission} scoring={scoring} />
           {footer}
         </>
       )}
@@ -148,7 +148,13 @@ export default function StudentRound({
 }
 
 /** 제출 기회 3칸. 낸 답은 번호 배지와 함께 크게, 남은 칸은 점선으로 */
-function AttemptSlots({ attempts }: { attempts: Submission["attempts"] }) {
+function AttemptSlots({
+  attempts,
+  scoring,
+}: {
+  attempts: Submission["attempts"];
+  scoring: number[];
+}) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm font-semibold text-[var(--color-muted)]">
@@ -165,6 +171,7 @@ function AttemptSlots({ attempts }: { attempts: Submission["attempts"] }) {
               {i + 1}차
             </span>
             <span className="min-w-0 flex-1 break-all text-xl font-semibold">{a.answer}</span>
+            <AttemptStage stage={a.hintsOpenAtSubmit} scoring={scoring} />
           </div>
         ) : (
           <div
@@ -183,7 +190,13 @@ function AttemptSlots({ attempts }: { attempts: Submission["attempts"] }) {
 }
 
 /** 정답 공개 후 내 결과. 정답·오답·확인 중을 색과 큰 글자로 한눈에 */
-function ResultCard({ submission }: { submission: Submission | null }) {
+function ResultCard({
+  submission,
+  scoring,
+}: {
+  submission: Submission | null;
+  scoring: number[];
+}) {
   if (!submission) {
     return (
       <div className="flex flex-col items-center gap-1 rounded-[var(--radius-card)] border-2 border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
@@ -234,12 +247,22 @@ function ResultCard({ submission }: { submission: Submission | null }) {
       {tone.sub && <p className="text-xl font-semibold">{tone.sub}</p>}
       <ul className="mt-2 flex w-full flex-col gap-1 border-t border-[var(--color-border)] pt-3 text-left text-lg">
         {submission.attempts.map((a, i) => (
-          <li key={i} className="flex gap-2">
+          <li key={i} className="flex items-center gap-2">
             <span className="shrink-0 font-semibold text-[var(--color-muted)]">{i + 1}차</span>
-            <span className="break-all">{a.answer}</span>
+            <span className="min-w-0 flex-1 break-all">{a.answer}</span>
+            <AttemptStage stage={a.hintsOpenAtSubmit} scoring={scoring} />
           </li>
         ))}
       </ul>
     </div>
+  );
+}
+
+/** 그 답을 낸 순간 열려 있던 단서 단계와, 정답이었다면 받는 점수 */
+function AttemptStage({ stage, scoring }: { stage: number; scoring: number[] }) {
+  return (
+    <span className="shrink-0 rounded-full bg-[var(--color-soft)] px-2.5 py-0.5 text-sm font-semibold text-[var(--color-primary-ink)]">
+      단서 {stage} · {scoring[stage - 1] ?? 0}점
+    </span>
   );
 }

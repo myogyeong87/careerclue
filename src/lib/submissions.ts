@@ -8,6 +8,7 @@ import {
   updateDoc,
   where,
   writeBatch,
+  type WriteBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { judgeAnswer } from "./answerJudge";
@@ -130,18 +131,32 @@ export function subscribeAllSubmissions(
   });
 }
 
-/** 정답 공개 시점에 해당 라운드의 모든 제출을 일괄 채점 (스펙 7장) */
+/** 학생이 다른 이름으로 다시 들어오면 이미 낸 제출의 이름도 새 이름으로 맞춤 (점수는 학번 기준으로 이어짐) */
+export async function renameStudentSubmissions(studentId: string, name: string): Promise<void> {
+  const snap = await getDocs(query(submissionsCol(), where("studentId", "==", studentId)));
+  const stale = snap.docs.filter((d) => d.data().studentName !== name);
+  if (stale.length === 0) return;
+  const batch = writeBatch(db);
+  stale.forEach((d) => batch.update(d.ref, { studentName: name }));
+  await batch.commit();
+}
+
+/**
+ * 정답 공개 시점에 해당 라운드의 모든 제출을 일괄 채점 (스펙 7장).
+ * alsoInBatch로 정답 공개(phase 전환)를 같은 batch에 넣으면, 학생 화면에 채점 전 "오답"이 잠깐 보였다가 바뀌는 일이 없음
+ */
 export async function gradeRound(
   roundId: string,
   job: Job,
   scoring: number[],
   kind: SubmissionKind = "game",
+  alsoInBatch?: (batch: WriteBatch) => void,
 ): Promise<void> {
   const q = query(submissionsCol(kind), where("roundId", "==", roundId));
   const snap = await getDocs(q);
-  if (snap.empty) return;
 
   const batch = writeBatch(db);
+  alsoInBatch?.(batch);
   snap.docs.forEach((d) => {
     const attempts = (d.data().attempts ?? []) as SubmissionAttempt[];
     let reviewNeeded = false;

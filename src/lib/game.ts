@@ -168,8 +168,9 @@ export async function revealAnswer(game: GameState): Promise<void> {
   if (!game.roundId) return;
   const job = game.jobs[game.currentIndex];
   if (!job) return;
-  await updateDoc(GAME_DOC, { phase: "revealed" });
-  await gradeRound(game.roundId, job, game.scoring);
+  await gradeRound(game.roundId, job, game.scoring, "game", (batch) =>
+    batch.update(GAME_DOC, { phase: "revealed" }),
+  );
 }
 
 /** 다음 라운드로 진행, 마지막 문제였다면 종료 처리 */

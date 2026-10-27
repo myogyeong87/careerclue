@@ -55,13 +55,14 @@ export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
           {sorted.map((s) => (
             <li
               key={s.studentId}
-              className="group relative flex items-center justify-center rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-background)] px-2 py-[0.45em]"
+              className="group relative flex items-center justify-center rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-background)] px-2 py-[0.35em]"
               style={{ width: chipWidth, fontSize: chipFont }}
               title={`${s.studentId} ${s.name}`}
             >
-              <span className="truncate">
-                <span className="text-[var(--color-muted)]">{s.studentId}</span>{" "}
-                <span className="font-semibold">{s.name}</span>
+              {/* 말줄임 없이 학번은 윗줄(작게), 이름은 아랫줄. 이름이 길면 줄바꿈 */}
+              <span className="flex min-w-0 flex-col items-center leading-tight">
+                <span className="text-[0.7em] text-[var(--color-muted)]">{s.studentId}</span>
+                <span className="break-keep font-semibold [overflow-wrap:anywhere]">{s.name}</span>
               </span>
               <button
                 type="button"

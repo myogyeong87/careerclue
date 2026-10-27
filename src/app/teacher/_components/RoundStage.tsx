@@ -28,6 +28,7 @@ export default function RoundStage({
   advanceLabel,
   onAdvance,
   resultExtra,
+  headerActions,
 }: {
   kind: SubmissionKind;
   label: React.ReactNode;
@@ -45,6 +46,8 @@ export default function RoundStage({
   advanceLabel: string;
   onAdvance: () => Promise<void>;
   resultExtra?: React.ReactNode;
+  /** 문제 번호 옆에 둘 버튼 (실제 게임의 중간 점수 등) */
+  headerActions?: React.ReactNode;
 }) {
   const [submissionsState, setSubmissionsState] = useState<{
     roundId: string | null;
@@ -77,7 +80,10 @@ export default function RoundStage({
   if (revealed) {
     return (
       <div className="flex flex-1 flex-col gap-4">
-        <div className="text-2xl font-semibold text-[var(--color-muted)]">{label}</div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-2xl font-semibold text-[var(--color-muted)]">{label}</div>
+          {headerActions}
+        </div>
         <RoundResultPanel
           key={roundId}
           kind={kind}
@@ -94,7 +100,13 @@ export default function RoundStage({
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <div className="text-2xl font-semibold text-[var(--color-muted)]">{label}</div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-2xl font-semibold text-[var(--color-muted)]">{label}</div>
+        <div className="flex flex-wrap items-center gap-4">
+          {headerActions}
+          <DetectiveDog hintsOpen={hintsOpen} scoring={scoring} submitted={submissions.length} />
+        </div>
+      </div>
 
       <ClueBoard
         hints={job.hints}
@@ -162,6 +174,43 @@ export default function RoundStage({
           )}
         </ul>
       </div>
+    </div>
+  );
+}
+
+/** 교사 화면의 탐정 강아지. 공개된 단서 수와 지금 맞히면 받는 점수를 말풍선으로 알려줌 */
+function DetectiveDog({
+  hintsOpen,
+  scoring,
+  submitted,
+}: {
+  hintsOpen: number;
+  scoring: number[];
+  submitted: number;
+}) {
+  const points = scoring[hintsOpen - 1] ?? 0;
+  const line =
+    hintsOpen === 1
+      ? `첫 단서예요! 지금 맞히면 ${points}점 🔍`
+      : hintsOpen >= 5
+        ? `마지막 단서! 지금 맞히면 ${points}점`
+        : `단서 ${hintsOpen}개 공개! 지금 맞히면 ${points}점`;
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        key={hintsOpen}
+        className="relative rounded-2xl border-2 border-[var(--color-primary)] bg-white px-4 py-2 text-xl font-semibold shadow-[var(--shadow-card)] motion-safe:animate-[rankPop_0.4s_ease-out]"
+      >
+        {line}
+        {submitted > 0 && (
+          <span className="ml-2 text-lg font-normal text-[var(--color-muted)]">
+            {submitted}명 제출
+          </span>
+        )}
+        <span className="absolute -right-2 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-r-2 border-t-2 border-[var(--color-primary)] bg-white" />
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/dog.png" alt="탐정 강아지" className="h-16 w-16 shrink-0" />
     </div>
   );
 }
