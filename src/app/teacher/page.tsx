@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { endGameNow, resetToLobby, resumeGame, subscribeGameState } from "@/lib/game";
 import { subscribeAssignMode, subscribeClasses } from "@/lib/classes";
 import { ClassIdProvider, useClassId } from "@/lib/classContext";
+import { LEGACY_CLASS_ID, migrateLegacyDataIfNeeded } from "@/lib/migration";
 import { useCountdownAutoStart } from "@/lib/useCountdownAutoStart";
 import { useStoredString } from "@/lib/useStoredString";
 import {
@@ -33,6 +34,9 @@ export default function TeacherPage() {
 }
 
 function TeacherHome() {
+  // 반 구조 이전 전의 데이터(games/current)가 있으면 먼저 "기본 반"으로 옮긴 뒤 화면을 보여줌
+  const [migration, setMigration] = useState<"running" | "done" | "error">("running");
+  const [migrationAttempt, setMigrationAttempt] = useState(0);
   const [classes, setClasses] = useState<ClassInfo[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [assignMode, setAssignMode] = useState<ClassAssignMode>("auto");
@@ -40,7 +44,26 @@ function TeacherHome() {
   const [showSettings, setShowSettings] = useState(false);
   const { size: fontSize } = useTeacherFontSize();
 
-  useEffect(() => subscribeClasses(setClasses, (err) => setLoadError(err.message)), []);
+  useEffect(() => {
+    let cancelled = false;
+    migrateLegacyDataIfNeeded()
+      .then((result) => {
+        if (cancelled) return;
+        if (result.status === "migrated") setStoredClassId(LEGACY_CLASS_ID);
+        setMigration("done");
+      })
+      .catch(() => {
+        if (!cancelled) setMigration("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [migrationAttempt, setStoredClassId]);
+
+  useEffect(() => {
+    if (migration !== "done") return;
+    return subscribeClasses(setClasses, (err) => setLoadError(err.message));
+  }, [migration]);
   useEffect(() => subscribeAssignMode(setAssignMode), []);
 
   // 기억한 반이 없거나 지워졌으면 첫 번째 반
@@ -53,7 +76,25 @@ function TeacherHome() {
       }`}
       style={{ "--tfs": `${fontSize}px` } as React.CSSProperties}
     >
-      {classes === null ? (
+      {migration === "error" ? (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-xl text-[var(--color-danger)]">
+            기존 게임 데이터를 &ldquo;기본 반&rdquo;으로 옮기지 못했어요. (옛 데이터는 그대로 남아 있어요)
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setMigration("running");
+              setMigrationAttempt((n) => n + 1);
+            }}
+            className="rounded-[var(--radius-card)] bg-[var(--color-primary)] px-5 py-2 font-semibold text-[var(--color-on-primary)]"
+          >
+            다시 시도
+          </button>
+        </div>
+      ) : migration === "running" ? (
+        <p className="text-xl text-[var(--color-muted)]">반 정보를 준비하는 중...</p>
+      ) : classes === null ? (
         <p className="text-xl text-[var(--color-muted)]">
           {loadError ? `반 목록을 불러오지 못했어요: ${loadError}` : "반 목록을 불러오는 중..."}
         </p>

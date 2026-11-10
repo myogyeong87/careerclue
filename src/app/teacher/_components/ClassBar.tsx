@@ -58,6 +58,11 @@ export default function ClassBar({
           ))}
         </select>
       )}
+      {selected && prefixRequired && !selected.prefix && (
+        <span className="rounded-lg bg-[var(--color-danger)]/15 px-3 py-1 text-sm font-semibold text-[var(--color-danger)]">
+          학번 접두사가 없어 학생이 들어올 수 없어요. ⚙ 설정 → 반 정보에서 정해주세요.
+        </span>
+      )}
       <button
         type="button"
         onClick={() => setCreating(true)}

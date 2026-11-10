@@ -6,6 +6,7 @@ import ClassForm from "./ClassForm";
 import {
   DeleteAllClassesSection,
   DeleteClassSection,
+  LegacyDataSection,
   StudentRosterSection,
 } from "./ClassDataSections";
 import { DEFAULT_LOBBY_CAPACITY, useLobbyCapacity } from "@/lib/lobbyCapacity";
@@ -70,6 +71,8 @@ export default function SettingsPanel({
       </div>
 
       {classInfo && <DeleteClassSection key={classInfo.id} classInfo={classInfo} />}
+
+      <LegacyDataSection />
 
       <DeleteAllClassesSection />
     </div>

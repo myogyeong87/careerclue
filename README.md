@@ -21,7 +21,7 @@
 
 - 콘솔: https://console.firebase.google.com/project/careerclue-quiz/overview
 - 규칙 배포: `firebase deploy --only firestore:rules`
-- **주의**: 스펙상 로그인/인증이 없는 앱이라 `firestore.rules`가 `question_sets`·`games`·`roster` 컬렉션을 인증 없이 읽고 쓸 수 있게 열려 있습니다. 학급 내부용(민감 정보 없음)을 전제로 한 트레이드오프이니, 다른 용도로 확장할 경우 규칙을 다시 검토하세요.
+- **주의**: 스펙상 로그인/인증이 없는 앱이라 `firestore.rules`가 `question_sets`·`classes`(·이전 전 옛 위치 `games`·`roster`) 컬렉션을 인증 없이 읽고 쓸 수 있게 열려 있습니다. 학급 내부용(민감 정보 없음)을 전제로 한 트레이드오프이니, 다른 용도로 확장할 경우 규칙을 다시 검토하세요.
 
 ## 교사 PIN
 
@@ -37,10 +37,17 @@
 2. `config` 컬렉션 → `teacherPin` 문서를 선택해 **문서 삭제**
 3. 교사 화면을 새로고침하면 PIN 만들기 화면이 다시 나타납니다. (이미 12시간 기억 중인 기기는 기간이 끝날 때까지 그대로 들어가집니다. 바로 다시 만들려면 그 기기에서 사이트 데이터를 지우거나 시크릿 창으로 접속하세요.)
 
+## 반(세션) 구조
+
+- 반마다 `classes/{classId}` 문서에 반 정보(이름·학번 접두사)와 게임 진행 상태를 함께 저장하고, 그 아래 `students`(학생 명단)·`lobby`(지금 접속)·`submissions`(제출·점수)·`practice_submissions`(연습, 집계 제외) 하위 컬렉션을 둡니다. 문제 세트(`question_sets`)는 모든 반 공용입니다.
+- 학생은 학번 4자리의 앞 두 자리가 반 접두사와 같은 반으로 자동 입장합니다. 설정에서 "학생이 반을 직접 고르기"로 바꿀 수 있습니다(`config/classAssign`).
+- 반·학생 삭제와 점수 초기화는 하위 컬렉션까지 450건씩 나눠 지운 뒤 서버에서 다시 조회해 비었는지 확인합니다. `npm test`로 배정 규칙·batch 분할 단위 테스트를 실행합니다.
+- 반 구조 이전 전 데이터(`games/current`, 제출, 접속, `roster`)는 교사 화면을 처음 열 때 `classes/default`("기본 반")로 복사되고(`config/classMigration`에 완료 기록), 원본은 설정의 "옛 데이터 정리"에서 직접 지울 때까지 남습니다.
+
 ## 폴더 구조
 
 - `src/app/` — 역할 선택(`/`), 교사 화면(`/teacher`, 탭 4개), 학생 화면(`/student`)
-- `src/lib/` — Firestore 서비스 함수(`questionSets`, `game`, `submissions`, `lobby`), 타입(`types.ts`), 정답 판정(`answerJudge.ts`), 텍스트 유틸(초성·글자 수 미리보기: `text.ts`)
+- `src/lib/` — Firestore 서비스 함수(`questionSets`, `classes`, `game`, `submissions`, `lobby`, `students`, `migration`), 타입(`types.ts`), 정답 판정(`answerJudge.ts`), 텍스트 유틸(초성·글자 수 미리보기: `text.ts`)
 - `firestore.rules`, `firebase.json`, `.firebaserc` — Firestore 규칙/프로젝트 설정
 - `jikeop-quiz-spec.md` — 데이터 모델·화면 구성·게임 흐름 등 전체 스펙
 
@@ -52,7 +59,7 @@
 - [x] 교사: 세트 편집(문제/힌트 드래그 순서 변경, 내용 수정)
 - [x] 교사: 종료 화면(순위표, 오답노트 자동 분류)
 - [x] 학생: 사건 파일·제출·정답 공개 후 결과 확인
-- [x] 연습 라운드(내장 문제 '사서', 결과는 `games/practice/submissions`에만 저장되고 집계 제외)
+- [x] 연습 라운드(내장 문제 '사서', 결과는 반 안의 `practice_submissions`에만 저장되고 집계 제외)
 - [x] 종료 화면 TOP 5 순위 공개 연출, 교사 PIN
 - [ ] 오답노트 카드의 "직업 설명 한두 줄" — 현재 데이터 모델(`Job`)에 설명 필드가 없어 미구현. 필요하면 스펙에 필드 추가 후 반영 필요
 
