@@ -4,7 +4,7 @@ import { useState } from "react";
 import QuestionSetsTab from "./QuestionSetsTab";
 import ClassForm from "./ClassForm";
 import { DEFAULT_LOBBY_CAPACITY, useLobbyCapacity } from "@/lib/lobbyCapacity";
-import { updateClassInfo } from "@/lib/classes";
+import { setAssignMode, updateClassInfo } from "@/lib/classes";
 import type { ClassAssignMode, ClassInfo } from "@/lib/types";
 
 const SECTION =
@@ -38,6 +38,8 @@ export default function SettingsPanel({
       {classInfo && <QuestionSetsTab />}
 
       {classInfo && <ClassInfoSection classInfo={classInfo} assignMode={assignMode} />}
+
+      <AssignModeSection assignMode={assignMode} />
 
       <div className={SECTION}>
         <h3 className="text-sm font-semibold">학생 정원</h3>
@@ -119,6 +121,44 @@ function ClassInfoSection({
           {saved && <span className="text-[var(--color-success-ink)]">저장했어요</span>}
         </div>
       )}
+    </div>
+  );
+}
+
+const ASSIGN_OPTIONS: { mode: ClassAssignMode; label: string; description: string }[] = [
+  {
+    mode: "auto",
+    label: "학번으로 자동 배정 (기본)",
+    description: "학번 4자리(학년·반·번호 2자리)의 앞 두 자리와 같은 접두사의 반으로 바로 들어가요.",
+  },
+  {
+    mode: "manual",
+    label: "학생이 반을 직접 고르기",
+    description: "반 번호가 10 이상이라 4자리 학번 규칙이 맞지 않을 때 쓰세요. 입장 화면에 반 목록이 나와요.",
+  },
+];
+
+/** 학생 반 배정 방식 (모든 학생 기기에 적용되므로 Firestore에 저장) */
+function AssignModeSection({ assignMode }: { assignMode: ClassAssignMode }) {
+  return (
+    <div className={SECTION}>
+      <h3 className="text-sm font-semibold">학생 반 배정 방식</h3>
+      {ASSIGN_OPTIONS.map((o) => (
+        <label key={o.mode} className="flex items-start gap-2 text-sm">
+          <input
+            type="radio"
+            name="assignMode"
+            checked={assignMode === o.mode}
+            onChange={() => setAssignMode(o.mode)}
+            className="mt-1"
+          />
+          <span>
+            <b>{o.label}</b>
+            <br />
+            <span className="text-[var(--color-muted)]">{o.description}</span>
+          </span>
+        </label>
+      ))}
     </div>
   );
 }
