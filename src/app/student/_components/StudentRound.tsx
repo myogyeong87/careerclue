@@ -11,10 +11,12 @@ import { charCountPreview, toChosung } from "@/lib/text";
 import type { Job, Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
 import Confetti from "@/app/_components/Confetti";
+import { useClassId } from "@/lib/classContext";
 
 /** 학생 화면의 한 라운드 (사건 파일 + 제출 폼 + 정답 공개 후 내 결과). 실제 게임과 연습이 함께 사용 */
 export default function StudentRound({
   kind,
+  runId,
   studentId,
   studentName,
   roundId,
@@ -29,6 +31,8 @@ export default function StudentRound({
   footer,
 }: {
   kind: SubmissionKind;
+  /** 실제 게임의 게임 ID (연습이면 null) */
+  runId: string | null;
   studentId: string;
   studentName: string;
   roundId: string;
@@ -42,6 +46,7 @@ export default function StudentRound({
   header: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const classId = useClassId();
   const [submissionState, setSubmissionState] = useState<{
     roundId: string | null;
     submission: Submission | null;
@@ -53,12 +58,13 @@ export default function StudentRound({
   useEffect(
     () =>
       subscribeMySubmission(
+        classId,
         roundId,
         studentId,
         (submission) => setSubmissionState({ roundId, submission }),
         kind,
       ),
-    [roundId, studentId, kind],
+    [classId, roundId, studentId, kind],
   );
 
   const mySubmission = submissionState.roundId === roundId ? submissionState.submission : null;
@@ -74,6 +80,9 @@ export default function StudentRound({
     setError(null);
     try {
       const result = await submitAttempt({
+        classId,
+        runId,
+        jobTitle: job.title,
         roundId,
         studentId,
         studentName,

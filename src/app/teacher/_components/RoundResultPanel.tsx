@@ -10,6 +10,7 @@ import {
 import { tfs } from "@/lib/teacherFontSize";
 import type { Job, Submission } from "@/lib/types";
 import Modal from "@/app/_components/Modal";
+import { useClassId } from "@/lib/classContext";
 
 /**
  * 정답 공개 후 교사 화면 결과 영역.
@@ -34,6 +35,7 @@ export default function RoundResultPanel({
   /** 정답 문구 아래에 추가로 보여줄 내용 (연습 라운드의 단계별 점수 등) */
   extra?: React.ReactNode;
 }) {
+  const classId = useClassId();
   const [correctOpen, setCorrectOpen] = useState(false);
   const [wrongOpen, setWrongOpen] = useState(false);
   const [wrongNamesShown, setWrongNamesShown] = useState(false);
@@ -84,6 +86,7 @@ export default function RoundResultPanel({
     setProcessing((cur) => new Set(cur).add(s.id));
     try {
       await resolvePendingSubmission(
+        classId,
         s.id,
         isCorrect ? { correct: true, score, stage } : { correct: false },
         kind,
@@ -108,7 +111,7 @@ export default function RoundResultPanel({
     try {
       if (skipPending) {
         await Promise.all(
-          pending.map((s) => resolvePendingSubmission(s.id, { correct: false }, kind)),
+          pending.map((s) => resolvePendingSubmission(classId, s.id, { correct: false }, kind)),
         );
       }
       setConfirmSkip(false);

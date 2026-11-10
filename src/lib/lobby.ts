@@ -1,20 +1,19 @@
 import {
-  collection,
   deleteDoc,
   doc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
-  writeBatch,
   type Timestamp,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { classSubcol } from "./classes";
+import { deleteQueryFully } from "./firestoreDelete";
 
-function lobbyCol() {
-  return collection(db, "games", "current", "lobby");
+/** 지금 접속해 있는 학생 (반별). 학생 명단(등록)은 students.ts */
+export function lobbyCol(classId: string) {
+  return classSubcol(classId, "lobby");
 }
 
 export interface LobbyStudent {
@@ -24,22 +23,23 @@ export interface LobbyStudent {
 }
 
 /** 학생이 대기실/게임에 접속했음을 알림 (재접속 시 upsert) */
-export async function joinLobby(studentId: string, name: string): Promise<void> {
-  await setDoc(doc(lobbyCol(), studentId), {
+export async function joinLobby(classId: string, studentId: string, name: string): Promise<void> {
+  await setDoc(doc(lobbyCol(classId), studentId), {
     name,
     joinedAt: serverTimestamp(),
   });
 }
 
 /** 교사가 잘못 접속한 학생을 퇴장시킴 */
-export async function kickStudent(studentId: string): Promise<void> {
-  await deleteDoc(doc(lobbyCol(), studentId));
+export async function kickStudent(classId: string, studentId: string): Promise<void> {
+  await deleteDoc(doc(lobbyCol(classId), studentId));
 }
 
 export function subscribeLobby(
+  classId: string,
   onChange: (students: LobbyStudent[]) => void,
 ): () => void {
-  const q = query(lobbyCol(), orderBy("joinedAt", "asc"));
+  const q = query(lobbyCol(classId), orderBy("joinedAt", "asc"));
   return onSnapshot(q, (snap) =>
     onChange(
       snap.docs.map((d) => {
@@ -57,16 +57,13 @@ export function subscribeLobby(
 
 /** 특정 학생이 대기실에서 퇴장당했는지(문서가 사라졌는지) 구독 */
 export function subscribeLobbyPresence(
+  classId: string,
   studentId: string,
   onChange: (present: boolean) => void,
 ): () => void {
-  return onSnapshot(doc(lobbyCol(), studentId), (snap) => onChange(snap.exists()));
+  return onSnapshot(doc(lobbyCol(classId), studentId), (snap) => onChange(snap.exists()));
 }
 
-export async function clearLobby(): Promise<void> {
-  const snap = await getDocs(lobbyCol());
-  if (snap.empty) return;
-  const batch = writeBatch(db);
-  snap.docs.forEach((d) => batch.delete(d.ref));
-  await batch.commit();
+export async function clearLobby(classId: string): Promise<void> {
+  await deleteQueryFully(lobbyCol(classId));
 }

@@ -5,6 +5,7 @@ import { subscribeAllSubmissions } from "@/lib/submissions";
 import { buildLeaderboard } from "@/lib/ranking";
 import { tfs } from "@/lib/teacherFontSize";
 import type { Submission } from "@/lib/types";
+import { useClassId } from "@/lib/classContext";
 import Modal from "@/app/_components/Modal";
 
 /** 게임 진행 중 교사가 지금까지의 누적 점수 순위를 확인하는 버튼 + 모달 */
@@ -26,8 +27,9 @@ export default function ScoreboardButton() {
 }
 
 function ScoreboardModal({ onClose }: { onClose: () => void }) {
+  const classId = useClassId();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  useEffect(() => subscribeAllSubmissions(setSubmissions), []);
+  useEffect(() => subscribeAllSubmissions(classId, setSubmissions), [classId]);
   const leaderboard = useMemo(() => buildLeaderboard(submissions), [submissions]);
 
   return (

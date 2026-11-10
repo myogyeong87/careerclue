@@ -6,6 +6,15 @@ service cloud.firestore {
     match /question_sets/{setId} {
       allow read, write: if true;
     }
+    // 반(세션): 반 정보 + 게임 진행 상태. 하위 컬렉션 students·lobby·submissions·practice_submissions
+    match /classes/{classId} {
+      allow read, write: if true;
+
+      match /{subcollection}/{docId} {
+        allow read, write: if true;
+      }
+    }
+    // 반 구조 이전 전의 옛 위치. 기본 반으로 옮긴 뒤 교사가 설정에서 직접 정리할 때까지 남겨둠
     match /games/{gameId} {
       allow read, write: if true;
 

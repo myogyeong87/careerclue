@@ -11,6 +11,7 @@ import { judgeAnswer } from "@/lib/answerJudge";
 import { buildAwards } from "@/lib/awards";
 import RankReveal from "./RankReveal";
 import AwardStage from "./AwardStage";
+import { useClassId } from "@/lib/classContext";
 
 /** 정답률(정답자 수 / 이번 게임 참여 학생 수)로 나눈 오답노트 분류. 어려운 문제부터 */
 type Category = "allWrong" | "under50" | "over50" | "allCorrect";
@@ -99,20 +100,26 @@ const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function ResultsTab() {
+  const classId = useClassId();
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => subscribeGameState(setGame), []);
-  useEffect(() => subscribeAllSubmissions(setSubmissions), []);
+  useEffect(() => subscribeGameState(classId, setGame), [classId]);
+  useEffect(() => subscribeAllSubmissions(classId, setSubmissions), [classId]);
 
+  // 순위표는 반의 누적 점수(이전 게임 포함), 오답노트·특별상은 이번 게임 제출만
   const leaderboard = useMemo(() => buildLeaderboard(submissions), [submissions]);
+  const runSubmissions = useMemo(
+    () => submissions.filter((s) => s.runId === game.runId),
+    [submissions, game.runId],
+  );
   const groups = useMemo(() => topRankGroups(leaderboard), [leaderboard]);
   // 5위 → 1위 순으로 공개
   const revealOrder = useMemo(() => [...groups].reverse(), [groups]);
-  const rounds = useMemo(() => buildRounds(game, submissions), [game, submissions]);
+  const rounds = useMemo(() => buildRounds(game, runSubmissions), [game, runSubmissions]);
 
-  const awards = useMemo(() => buildAwards(game, submissions), [game, submissions]);
+  const awards = useMemo(() => buildAwards(game, runSubmissions), [game, runSubmissions]);
 
   // 단계: 0 = 타이틀, 1..순위 수 = 순위 공개, 그 뒤 1장씩 특별상
   const lastStep = revealOrder.length + awards.length;
@@ -130,13 +137,13 @@ export default function ResultsTab() {
         } else {
           playRankPop();
         }
-        await setRankRevealStep(step + 1);
+        await setRankRevealStep(classId, step + 1);
       } else if (step < lastStep) {
         playRevealChime();
-        await setRankRevealStep(step + 1);
+        await setRankRevealStep(classId, step + 1);
       } else {
         playRevealChime();
-        await finishRankReveal();
+        await finishRankReveal(classId);
       }
     } finally {
       setBusy(false);

@@ -19,6 +19,7 @@ import {
 import { DEFAULT_QUESTION_SET } from "@/lib/defaultQuestionSet";
 import { DEFAULT_SCORING, type GameState, type QuestionSet } from "@/lib/types";
 import SetEditor from "./SetEditor";
+import { useClassId } from "@/lib/classContext";
 
 function downloadJson(filename: string, content: string) {
   const blob = new Blob([content], { type: "application/json" });
@@ -31,6 +32,7 @@ function downloadJson(filename: string, content: string) {
 }
 
 export default function QuestionSetsTab() {
+  const classId = useClassId();
   const [sets, setSets] = useState<QuestionSet[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [game, setGame] = useState<GameState | null>(null);
@@ -53,12 +55,12 @@ export default function QuestionSetsTab() {
     const unsubSets = subscribeQuestionSets(setSets, (err) =>
       setLoadError(err.message),
     );
-    const unsubGame = subscribeGameState(setGame);
+    const unsubGame = subscribeGameState(classId, setGame);
     return () => {
       unsubSets();
       unsubGame();
     };
-  }, []);
+  }, [classId]);
 
   const confirmIfRoundInProgress = () => {
     if (game && isRoundInProgress(game)) {
@@ -73,7 +75,7 @@ export default function QuestionSetsTab() {
     if (!confirmIfRoundInProgress()) return;
     setBusyId(set.id);
     try {
-      await applySetToGame(set);
+      await applySetToGame(classId, set);
     } finally {
       setBusyId(null);
     }
@@ -101,7 +103,7 @@ export default function QuestionSetsTab() {
         : null;
     setBusyId(set.id);
     try {
-      await applySetToGame(set, count);
+      await applySetToGame(classId, set, count);
       setRandomMessages((m) => ({ ...m, [set.id]: message }));
     } finally {
       setBusyId(null);
@@ -127,7 +129,7 @@ export default function QuestionSetsTab() {
         : null;
     setPoolBusy(true);
     try {
-      await applyRandomPoolToGame(uniquePool, count);
+      await applyRandomPoolToGame(classId, uniquePool, count);
       setPoolMessage(message);
     } finally {
       setPoolBusy(false);

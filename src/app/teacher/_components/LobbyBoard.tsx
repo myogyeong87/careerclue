@@ -4,6 +4,7 @@ import { kickStudent, type LobbyStudent } from "@/lib/lobby";
 import { useLobbyCapacity } from "@/lib/lobbyCapacity";
 import { DEFAULT_TEACHER_FONT_SIZE } from "@/lib/teacherFontSize";
 import CaseFileCard from "@/app/_components/CaseFileCard";
+import { useClassId } from "@/lib/classContext";
 
 const CHIP_GAP_PX = 12;
 /** 이름표가 아무리 작아져도 교실에서 읽을 수 있는 최소 글자 크기 */
@@ -18,6 +19,7 @@ function chipScale(count: number): number {
 }
 
 export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
+  const classId = useClassId();
   const capacity = useLobbyCapacity()[0];
   const sorted = [...students].sort((a, b) =>
     a.studentId.localeCompare(b.studentId, undefined, { numeric: true }),
@@ -66,7 +68,7 @@ export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
               </span>
               <button
                 type="button"
-                onClick={() => kickStudent(s.studentId)}
+                onClick={() => kickStudent(classId, s.studentId)}
                 title="퇴장시키기"
                 aria-label={`${s.name} 퇴장시키기`}
                 className="absolute -right-2 -top-2 hidden h-7 w-7 items-center justify-center rounded-full bg-[var(--color-danger)] text-sm font-bold text-[var(--foreground)] shadow group-hover:flex group-focus-within:flex"

@@ -13,6 +13,7 @@ import {
 } from "@/lib/game";
 import { subscribeLobby, type LobbyStudent } from "@/lib/lobby";
 import { startPractice } from "@/lib/practice";
+import { useClassId } from "@/lib/classContext";
 import { useOrigin } from "@/lib/useOrigin";
 import { EMPTY_GAME_STATE, type GameState } from "@/lib/types";
 import CaseFileCard from "@/app/_components/CaseFileCard";
@@ -32,25 +33,26 @@ export default function GameFlowView({
 }: {
   onOpenSettings: () => void;
 }) {
+  const classId = useClassId();
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [lobby, setLobby] = useState<LobbyStudent[]>([]);
   const origin = useOrigin();
   const [showHowTo, setShowHowTo] = useState(false);
   const [startingPractice, setStartingPractice] = useState(false);
 
-  useEffect(() => subscribeGameState(setGame), []);
-  useEffect(() => subscribeLobby(setLobby), []);
+  useEffect(() => subscribeGameState(classId, setGame), [classId]);
+  useEffect(() => subscribeLobby(classId, setLobby), [classId]);
 
   const handleStartWithCountdown = () => {
     if (game.phase === "countdown") return;
-    beginCountdown(START_COUNTDOWN_MS);
+    beginCountdown(classId, START_COUNTDOWN_MS);
   };
 
   const handleStartPractice = async () => {
     if (startingPractice) return;
     setStartingPractice(true);
     try {
-      await startPractice();
+      await startPractice(classId);
       setShowHowTo(false);
     } finally {
       setStartingPractice(false);
@@ -172,12 +174,12 @@ export default function GameFlowView({
       initialsRevealed={game.initialsRevealed}
       charCountRevealed={game.charCountRevealed}
       revealed={game.phase === "revealed"}
-      onNextHint={() => revealNextHint(game.hintsOpen)}
-      onCharCount={revealCharCount}
-      onInitials={revealInitials}
-      onReveal={() => revealAnswer(game)}
+      onNextHint={() => revealNextHint(classId, game.hintsOpen)}
+      onCharCount={() => revealCharCount(classId)}
+      onInitials={() => revealInitials(classId)}
+      onReveal={() => revealAnswer(classId, game)}
       advanceLabel={isLast ? "게임 종료" : "다음 라운드 ▶"}
-      onAdvance={() => advanceRound(game)}
+      onAdvance={() => advanceRound(classId, game)}
       headerActions={<ScoreboardButton />}
     />
   );

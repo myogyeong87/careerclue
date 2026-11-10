@@ -11,6 +11,7 @@ import {
   revealPracticeInitials,
 } from "@/lib/practice";
 import type { PracticeState } from "@/lib/types";
+import { useClassId } from "@/lib/classContext";
 import RoundStage from "./RoundStage";
 
 export function PracticeBadge({ className = "" }: { className?: string }) {
@@ -25,6 +26,7 @@ export function PracticeBadge({ className = "" }: { className?: string }) {
 
 /** 연습 라운드: 실제 라운드와 같은 화면·채점·보류 처리. 결과는 연습 전용 컬렉션에만 저장됨 */
 export default function PracticeStage({ practice }: { practice: PracticeState }) {
+  const classId = useClassId();
   const [ending, setEnding] = useState(false);
   const revealed = practice.phase === "revealed";
 
@@ -32,7 +34,7 @@ export default function PracticeStage({ practice }: { practice: PracticeState })
     if (ending) return;
     setEnding(true);
     try {
-      await endPractice();
+      await endPractice(classId);
     } finally {
       setEnding(false);
     }
@@ -69,12 +71,12 @@ export default function PracticeStage({ practice }: { practice: PracticeState })
         initialsRevealed={practice.initialsRevealed}
         charCountRevealed={practice.charCountRevealed}
         revealed={revealed}
-        onNextHint={() => revealPracticeHint(practice)}
-        onCharCount={revealPracticeCharCount}
-        onInitials={revealPracticeInitials}
-        onReveal={() => revealPracticeAnswer(practice)}
+        onNextHint={() => revealPracticeHint(classId, practice)}
+        onCharCount={() => revealPracticeCharCount(classId)}
+        onInitials={() => revealPracticeInitials(classId)}
+        onReveal={() => revealPracticeAnswer(classId, practice)}
         advanceLabel="연습 종료"
-        onAdvance={endPractice}
+        onAdvance={() => endPractice(classId)}
       />
     </div>
   );

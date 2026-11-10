@@ -10,29 +10,44 @@ import { EMPTY_GAME_STATE, type GameState, type Submission } from "@/lib/types";
 import HowToPlay from "@/app/_components/HowToPlay";
 import Countdown from "@/app/_components/Countdown";
 import StudentRound from "./StudentRound";
+import { useClassId } from "@/lib/classContext";
 
 export default function GameView({
   studentId,
   studentName,
+  onClassMissing,
 }: {
   studentId: string;
   studentName: string;
+  /** 선생님이 반을 지웠을 때 */
+  onClassMissing: () => void;
 }) {
+  const classId = useClassId();
   const [game, setGame] = useState<GameState>(EMPTY_GAME_STATE);
   const [myAllSubmissions, setMyAllSubmissions] = useState<Submission[]>([]);
 
-  useEffect(() => subscribeGameState(setGame), []);
-  useCountdownAutoStart(game);
-  useEffect(() => subscribeStudentSubmissions(studentId, setMyAllSubmissions), [studentId]);
+  useEffect(
+    () => subscribeGameState(classId, setGame, onClassMissing),
+    [classId, onClassMissing],
+  );
+  useCountdownAutoStart(classId, game);
+  useEffect(
+    () => subscribeStudentSubmissions(classId, studentId, setMyAllSubmissions),
+    [classId, studentId],
+  );
 
   const cumulativeScore = useMemo(
     () => myAllSubmissions.reduce((sum, s) => sum + s.score, 0),
     [myAllSubmissions],
   );
 
+  // 성적표는 이번 게임 문제만 (누적 점수는 이전 게임까지 포함)
   const sortedMySubmissions = useMemo(
-    () => [...myAllSubmissions].sort((a, b) => a.jobIndex - b.jobIndex),
-    [myAllSubmissions],
+    () =>
+      myAllSubmissions
+        .filter((s) => s.runId === game.runId)
+        .sort((a, b) => a.jobIndex - b.jobIndex),
+    [myAllSubmissions, game.runId],
   );
 
   if (game.phase === "finished" && !game.rankRevealDone) {
@@ -61,14 +76,14 @@ export default function GameView({
           <h2 className="text-sm font-semibold text-[var(--color-muted)]">내 성적표</h2>
           <ul className="flex flex-col gap-1.5">
             {sortedMySubmissions.map((s) => {
-              const submittedJob = game.jobs[s.jobIndex];
+              const title = s.jobTitle || game.jobs[s.jobIndex]?.title;
               return (
                 <li
                   key={s.id}
                   className="flex items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm"
                 >
                   <span className="font-semibold">
-                    {submittedJob?.title ?? `문제 ${s.jobIndex + 1}`}
+                    {title || `문제 ${s.jobIndex + 1}`}
                   </span>
                   <span
                     className={
@@ -109,6 +124,7 @@ export default function GameView({
       <StudentRound
         key={practice.roundId}
         kind="practice"
+        runId={null}
         studentId={studentId}
         studentName={studentName}
         roundId={practice.roundId}
@@ -153,6 +169,7 @@ export default function GameView({
     <StudentRound
       key={game.roundId}
       kind="game"
+      runId={game.runId}
       studentId={studentId}
       studentName={studentName}
       roundId={game.roundId}
@@ -187,8 +204,9 @@ export default function GameView({
 
 /** 전체 순위표가 공개된 뒤 내 순위만 보여줌 (다른 학생의 이름·점수는 표시하지 않음) */
 function MyRank({ studentId }: { studentId: string }) {
+  const classId = useClassId();
   const [all, setAll] = useState<Submission[]>([]);
-  useEffect(() => subscribeAllSubmissions(setAll), []);
+  useEffect(() => subscribeAllSubmissions(classId, setAll), [classId]);
   const me = useMemo(
     () => buildLeaderboard(all).find((e) => e.studentId === studentId),
     [all, studentId],

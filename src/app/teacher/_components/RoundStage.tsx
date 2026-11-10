@@ -6,6 +6,7 @@ import { charCountPreview, toChosung } from "@/lib/text";
 import type { Job, Submission } from "@/lib/types";
 import ClueBoard from "@/app/_components/ClueBoard";
 import RoundResultPanel from "./RoundResultPanel";
+import { useClassId } from "@/lib/classContext";
 
 /**
  * 교사 화면의 한 라운드 진행 UI (단서 공개 → 정답 공개 → 결과/보류 처리).
@@ -49,6 +50,7 @@ export default function RoundStage({
   /** 문제 번호 옆에 둘 버튼 (실제 게임의 중간 점수 등) */
   headerActions?: React.ReactNode;
 }) {
+  const classId = useClassId();
   const [submissionsState, setSubmissionsState] = useState<{
     roundId: string | null;
     submissions: Submission[];
@@ -58,11 +60,12 @@ export default function RoundStage({
   useEffect(
     () =>
       subscribeRoundSubmissions(
+        classId,
         roundId,
         (submissions) => setSubmissionsState({ roundId, submissions }),
         kind,
       ),
-    [roundId, kind],
+    [classId, roundId, kind],
   );
 
   const submissions =

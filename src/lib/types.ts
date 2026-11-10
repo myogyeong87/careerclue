@@ -24,6 +24,8 @@ export interface PracticeState {
 export type GamePhase = "idle" | "countdown" | "active" | "revealed" | "finished";
 
 export interface GameState {
+  /** 문제 세트를 적용할 때마다 새로 만드는 게임 ID. 같은 반에 쌓인 제출 중 "이번 게임" 것만 골라낼 때 사용 */
+  runId: string | null;
   activeSetId: string | null;
   jobs: Job[];
   scoring: number[];
@@ -59,7 +61,11 @@ export interface Submission {
   studentId: string;
   studentName: string;
   roundId: string;
+  /** 제출 당시 게임 ID (GameState.runId). 문제 세트가 바뀌어도 누적 점수는 반 전체 제출로 계산 */
+  runId: string | null;
   jobIndex: number;
+  /** 제출 당시 문제 이름. 문제 세트가 바뀐 뒤에도 성적표에 이름을 보여주기 위함 */
+  jobTitle: string;
   attempts: SubmissionAttempt[];
   correct: boolean;
   score: number;
@@ -70,6 +76,7 @@ export interface Submission {
 export const DEFAULT_SCORING = [100, 80, 60, 40, 20];
 
 export const EMPTY_GAME_STATE: GameState = {
+  runId: null,
   activeSetId: null,
   jobs: [],
   scoring: DEFAULT_SCORING,
@@ -86,3 +93,23 @@ export const EMPTY_GAME_STATE: GameState = {
   rankRevealDone: false,
   roundStartTimes: {},
 };
+
+/** 반(세션). 게임 진행 상태는 반 문서에 함께 저장됨 (classes/{classId}) */
+export interface ClassInfo {
+  id: string;
+  name: string;
+  /** 학번 앞 두 자리 (예: 1학년 1반 → "11") */
+  prefix: string;
+  createdAt: number;
+  /** 라운드 진행 중인지 (반 선택 전환 시 확인창용) */
+  inProgress: boolean;
+}
+
+/** 학생 반 배정 방식. auto: 학번 앞 두 자리로 자동 배정, manual: 학생이 입장할 때 반을 직접 고름 */
+export type ClassAssignMode = "auto" | "manual";
+
+/** 반에 등록된 학생 (classes/{classId}/students/{studentId}) */
+export interface RegisteredStudent {
+  studentId: string;
+  name: string;
+}

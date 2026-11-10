@@ -20,3 +20,12 @@ export function charCountPreview(text: string): string {
     .map((ch) => (ch === " " ? " " : "○"))
     .join("");
 }
+
+/** 앞 글자 받침에 맞는 조사. withJosa("1학년 1반", "이", "가") → "1학년 1반이" */
+export function withJosa(word: string, withFinal: string, withoutFinal: string): string {
+  const last = word.trim().slice(-1);
+  const code = last.charCodeAt(0) - 0xac00;
+  // 숫자로 끝나면 읽는 소리 기준 (2·4·5·9만 받침 없음), 그 밖의 문자는 받침 있는 쪽
+  const hasFinal = code >= 0 && code <= 11171 ? code % 28 !== 0 : !/[2459]$/.test(last);
+  return word + (hasFinal ? withFinal : withoutFinal);
+}
