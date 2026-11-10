@@ -4,7 +4,7 @@ import { useState } from "react";
 import QuestionSetsTab from "./QuestionSetsTab";
 import ClassForm from "./ClassForm";
 import { DEFAULT_LOBBY_CAPACITY, useLobbyCapacity } from "@/lib/lobbyCapacity";
-import { setAssignMode, updateClassInfo } from "@/lib/classes";
+import { resetClassScores, setAssignMode, updateClassInfo } from "@/lib/classes";
 import type { ClassAssignMode, ClassInfo } from "@/lib/types";
 
 const SECTION =
@@ -121,6 +121,54 @@ function ClassInfoSection({
           {saved && <span className="text-[var(--color-success-ink)]">저장했어요</span>}
         </div>
       )}
+      <ScoreResetButton classInfo={classInfo} />
+    </div>
+  );
+}
+
+/** 반별 점수 초기화: 점수(제출 기록)만 지우고 학생 명단은 남김 */
+function ScoreResetButton({ classInfo }: { classInfo: ClassInfo }) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const handleReset = async () => {
+    if (busy) return;
+    const warning = classInfo.inProgress
+      ? "\n\n지금 라운드가 진행 중이라 이번 라운드에 낸 답도 함께 지워져요."
+      : "";
+    if (
+      !window.confirm(
+        `${classInfo.name}의 점수와 제출 기록을 모두 지울까요? 학생 명단은 그대로 남아요.${warning}`,
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      await resetClassScores(classInfo.id);
+      setMessage(`${classInfo.name}의 점수를 초기화했어요.`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "초기화하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-[var(--color-border)] pt-3 text-sm">
+      <button
+        type="button"
+        disabled={busy}
+        onClick={handleReset}
+        className="rounded-lg border-2 border-[var(--color-danger)] bg-white px-3 py-1 font-semibold text-[var(--color-danger)] disabled:opacity-50"
+      >
+        {busy ? "초기화 중..." : "점수 초기화"}
+      </button>
+      <span className="text-[var(--color-muted)]">
+        이 반의 누적 점수와 제출 기록만 지워요. 문제 세트를 바꿔도 점수는 이어지니, 새로 시작할 때만 쓰세요.
+      </span>
+      {message && <span className="w-full">{message}</span>}
     </div>
   );
 }
