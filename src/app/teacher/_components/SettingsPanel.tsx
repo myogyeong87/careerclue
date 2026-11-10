@@ -3,6 +3,11 @@
 import { useState } from "react";
 import QuestionSetsTab from "./QuestionSetsTab";
 import ClassForm from "./ClassForm";
+import {
+  DeleteAllClassesSection,
+  DeleteClassSection,
+  StudentRosterSection,
+} from "./ClassDataSections";
 import { DEFAULT_LOBBY_CAPACITY, useLobbyCapacity } from "@/lib/lobbyCapacity";
 import { resetClassScores, setAssignMode, updateClassInfo } from "@/lib/classes";
 import type { ClassAssignMode, ClassInfo } from "@/lib/types";
@@ -39,6 +44,8 @@ export default function SettingsPanel({
 
       {classInfo && <ClassInfoSection classInfo={classInfo} assignMode={assignMode} />}
 
+      {classInfo && <StudentRosterSection classInfo={classInfo} />}
+
       <AssignModeSection assignMode={assignMode} />
 
       <div className={SECTION}>
@@ -61,6 +68,10 @@ export default function SettingsPanel({
           명
         </label>
       </div>
+
+      {classInfo && <DeleteClassSection key={classInfo.id} classInfo={classInfo} />}
+
+      <DeleteAllClassesSection />
     </div>
   );
 }

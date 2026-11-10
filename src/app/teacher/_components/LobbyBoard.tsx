@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { kickStudent, type LobbyStudent } from "@/lib/lobby";
 import { useLobbyCapacity } from "@/lib/lobbyCapacity";
 import { DEFAULT_TEACHER_FONT_SIZE } from "@/lib/teacherFontSize";
 import CaseFileCard from "@/app/_components/CaseFileCard";
 import { useClassId } from "@/lib/classContext";
+import StudentMenu from "./StudentMenu";
 
 const CHIP_GAP_PX = 12;
 /** 이름표가 아무리 작아져도 교실에서 읽을 수 있는 최소 글자 크기 */
@@ -21,6 +23,7 @@ function chipScale(count: number): number {
 export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
   const classId = useClassId();
   const capacity = useLobbyCapacity()[0];
+  const [menuFor, setMenuFor] = useState<LobbyStudent | null>(null);
   const sorted = [...students].sort((a, b) =>
     a.studentId.localeCompare(b.studentId, undefined, { numeric: true }),
   );
@@ -61,11 +64,16 @@ export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
               style={{ width: chipWidth, fontSize: chipFont }}
               title={`${s.studentId} ${s.name}`}
             >
-              {/* 말줄임 없이 학번은 윗줄(작게), 이름은 아랫줄. 이름이 길면 줄바꿈 */}
-              <span className="flex min-w-0 flex-col items-center leading-tight">
+              {/* 말줄임 없이 학번은 윗줄(작게), 이름은 아랫줄. 이름이 길면 줄바꿈. 누르면 학생 관리 메뉴 */}
+              <button
+                type="button"
+                onClick={() => setMenuFor(s)}
+                aria-label={`${s.name} 관리 메뉴`}
+                className="flex min-w-0 flex-col items-center leading-tight"
+              >
                 <span className="text-[0.7em] text-[var(--color-muted)]">{s.studentId}</span>
                 <span className="break-keep font-semibold [overflow-wrap:anywhere]">{s.name}</span>
-              </span>
+              </button>
               <button
                 type="button"
                 onClick={() => kickStudent(classId, s.studentId)}
@@ -78,6 +86,14 @@ export default function LobbyBoard({ students }: { students: LobbyStudent[] }) {
             </li>
           ))}
         </ul>
+      )}
+      {menuFor && (
+        <StudentMenu
+          student={menuFor}
+          present
+          roundInProgress={false}
+          onClose={() => setMenuFor(null)}
+        />
       )}
     </CaseFileCard>
   );
